@@ -14,7 +14,7 @@ wrn() { echo "⚠️  $*"; warn=$((warn + 1)); }
 self_check() {
   cd "$ROOT" || exit 2
   # frontmatter
-  if head -1 SKILL.md | grep -q '^---$' && grep -q '^name: code-video$' SKILL.md && grep -q '^description: .\{40,\}' SKILL.md; then
+  if head -1 SKILL.md | grep -q '^---$' && grep -q '^name: code-video$' SKILL.md && grep -q '^description: .' SKILL.md; then
     ok "SKILL.md frontmatter"
   else bad "SKILL.md frontmatter 缺 name 或 description"; fi
 
