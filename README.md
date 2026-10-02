@@ -87,8 +87,8 @@ Ask the agent in plain language, for example:
 ## Validation
 
 ```sh
-bash check.sh                      # skill: links, rule cards vs catalog, card references, style pack sections, script syntax
-bash check.sh /path/to/project     # project: pinned version, no network, determinism patterns, fonts, frame count, loudness
+bash check.sh                      # skill: links, rule cards vs catalog, card references, style pack sections, script syntax, brand-block fixtures
+bash check.sh /path/to/project     # project: pinned version, no network, determinism patterns, fonts, brand tokens block, frame count, loudness
 ```
 
 The skill was developed with a blind-test loop: agents that had only the skill and a task produced 13 videos across three rounds, and every rule change was re-checked against earlier tasks. A mechanical pass does not prove visual quality; the style pack checklists and a contact sheet review cover that.

@@ -87,8 +87,8 @@ HyperFrames 第一次渲染会下载锁定版本的 chrome-headless-shell（约 
 ## 验证
 
 ```sh
-bash check.sh                      # Skill：链接、规则卡与目录一致、卡号引用、风格包章节、脚本语法
-bash check.sh /path/to/project     # 项目：锁定版本、不联网、确定性模式、字体、帧数、响度
+bash check.sh                      # Skill：链接、规则卡与目录一致、卡号引用、风格包章节、脚本语法、品牌区块夹具
+bash check.sh /path/to/project     # 项目：锁定版本、不联网、确定性模式、字体、品牌参数区块、帧数、响度
 ```
 
 这个 Skill 用盲测循环打磨：Agent 手里只有 Skill 和任务描述，三轮共做了 13 支视频，每次改规则都回到之前的任务复测。机械检查通过不等于画面合格，画面质量靠风格包验收清单和联系表目检。

@@ -48,16 +48,24 @@
 ### CRAFT-007 · 品牌参数取自品牌目录
 - 触发: 视频项目所在仓库的根目录有 `brand/DESIGN.md`，或用户给出了品牌目录
 - 规则: 先读品牌目录里的 `DESIGN.md`，确认唯一参数来源、字体配置与资产映射。强调色、字体、Logo 只从这里取，不再向用户要品牌色或 logo。
-  - 颜色：用命令从 tokens 读出本片用到的颜色角色，生成 CSS 变量，禁止手抄 hex。参数来源是 profile-2 格式的 `tokens.json` 时，在视频项目根目录运行下面的命令，第一个参数是品牌目录（视频项目在默认位置 `brand/promo/<slug>/` 时为 `../..`），其后是 `meta.roles` 里的角色名：
+  - 颜色：用命令从 tokens 读出本片用到的颜色角色，生成 CSS 变量，禁止手抄 hex。参数来源是 profile-2 格式的 `tokens.json` 时，在视频项目根目录运行下面的命令，第一个参数是品牌目录（视频项目在默认位置 `brand/promo/<slug>/` 时为 `../..`），其后是 `meta.roles` 里的角色名。角色名不带后缀时读默认模式（`meta.defaultMode`）的值，变量名为 `--brand-<角色>`（角色名里的点换成连字符）；带 `@<模式>` 时读该模式的值（profile-2 为每个非默认模式生成 `tokens.resolved.<模式>.json`），变量名加 `-<模式>` 后缀，如 `text.primary@dark` 生成 `--brand-text-primary-dark`。深色底上的字标与文字用暗色模式的 `text.primary`，就取 `text.primary@dark`：
     ```bash
-    node -e 'const [b,...roles]=process.argv.slice(1),d=require("path").resolve(b),t=require(d+"/tokens.json"),r=require(d+"/tokens.resolved.json");for(const k of roles)console.log(`--brand-${k.replace(/\./g,"-")}: ${t.meta.roles[k].split(".").reduce((o,s)=>o[s],r).$value};`)' ../.. accent onAccent surface.default text.primary
+    node -e 'const p=require("path"),[b,...roles]=process.argv.slice(1),d=p.resolve(b),t=require(d+"/tokens.json");for(const a of roles){const[k,m]=a.split("@"),f=!m||m===t.meta.defaultMode?"tokens.resolved.json":`tokens.resolved.${m}.json`;console.log(`--brand-${k.replace(/\./g,"-")}${m?"-"+m:""}: ${t.meta.roles[k].split(".").reduce((o,s)=>o[s],require(p.join(d,f))).$value};`)}' ../.. accent onAccent surface.default text.primary text.primary@dark
     ```
-    输出放进组合第一个 `<style>` 的 `:root` token 块（`CRAFT-006`），用 `/* brand:tokens */` 与 `/* /brand:tokens */` 包住，并在开头注释里写下这条命令；tokens 改了就重跑，整体替换该区块。参数来源是其他格式时，按 `DESIGN.md` 写明的文件与字段，同样用命令读出。
+    输出放进组合第一个 `<style>` 的 `:root` token 块（`CRAFT-006`），区块照下面的样子写：起止标记各自单独成行、逐字照写；起始标记的下一行是一条注释，内容是这次运行的完整命令（含 `node -e` 脚本原文）；其余行只放命令输出。tokens 改了就重跑，整体替换两个标记之间的内容。
+    ```css
+    /* brand:tokens */
+    /* <完整命令> */
+    --brand-accent: #1A1D22;
+    --brand-text-primary-dark: #F6F7F9;
+    /* /brand:tokens */
+    ```
+    参数来源是其他格式时，按 `DESIGN.md` 写明的文件与字段，同样用命令读出，区块写法相同。`check.sh <视频项目目录>` 在上级目录有 `brand/DESIGN.md` 时检查这个区块存在、标记与命令注释的写法；品牌目录是 profile-2 tokens 时，再按上面的命名逐个核对变量值。
   - 读出的 `--brand-accent` 就是 `CRAFT-002` 里的品牌色：按 `CRAFT-002` 决定它替换色板的哪一格，那一格的 token 写成 `var(--brand-accent)`，不再写色值。
   - 字体：`DESIGN.md` 字体配置里的家族，按 `FONT-001` 的品牌字体做法引入。
   - 字标与 Logo：从资产映射取母版，用法见 `CRAFT-008`。
 - 为什么: 手抄 hex 让每份物料各存一份色值，品牌改色后各份不会一起变。一个产品仓的宣传片目录里，共用脚本与页面就各手抄了一份品牌色值
-- 验证: 重跑区块注释里的命令，输出与区块内容逐行一致；被品牌色替换的色板格写的是 `var(--brand-…)`，不是色值
+- 验证: 重跑区块注释里的命令，输出与区块内容逐行一致；`check.sh <视频项目目录>` 没有 `CRAFT-007` 报错；被品牌色替换的色板格写的是 `var(--brand-…)`，不是色值
 
 ### CRAFT-008 · 字标与 Logo 用母版路径
 - 触发: 画面里要出现产品的字标或 Logo

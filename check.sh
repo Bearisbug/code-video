@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # code-video 自检。
-#   bash check.sh                 检查本 Skill 结构：链接、规则卡与 catalog、卡号引用、风格包、脚本语法
+#   bash check.sh                 检查本 Skill 结构：链接、规则卡与 catalog、卡号引用、风格包、脚本语法、品牌区块检查夹具
 #   bash check.sh <视频项目目录>   检查视频项目是否遵守护栏，并复核 renders/ 成片的帧数与响度
 # 不开 pipefail：检查项大量用 `echo … | grep -q`，grep 命中即退出会让 echo 收到 SIGPIPE，
 # pipefail 下整条管道随机判为失败，同一输入两次运行结论不同。
@@ -85,6 +85,97 @@ self_check() {
   if [ -x "${PWD}/.venv/bin/python" ]; then
     .venv/bin/python -m py_compile scripts/analyze.py && ok "analyze.py 语法" || bad "analyze.py 语法错误"
   fi
+
+  # 品牌区块检查夹具（CRAFT-007）：正例零 ❌；反例各自报出对应问题；上级没有品牌目录时不检查
+  FX=$(mktemp -d); trap 'rm -rf "$FX"' EXIT
+  mkdir -p "$FX/repo/brand/promo/x" "$FX/plain"
+  echo '# 品牌' > "$FX/repo/brand/DESIGN.md"
+  echo '{"meta":{"modes":["light","dark"],"defaultMode":"light","roles":{"accent":"semantic.color.action.primary","text.primary":"semantic.color.text.primary"}}}' > "$FX/repo/brand/tokens.json"
+  echo '{"semantic":{"color":{"action":{"primary":{"$value":"#1A1D22"}},"text":{"primary":{"$value":"#1A1D22"}}}}}' > "$FX/repo/brand/tokens.resolved.json"
+  echo '{"semantic":{"color":{"action":{"primary":{"$value":"#E8EAED"}},"text":{"primary":{"$value":"#F6F7F9"}}}}}' > "$FX/repo/brand/tokens.resolved.dark.json"
+  local cmt="/* node -e '…' ../.. accent text.primary@dark */" res before3=$fail
+  fx_brand() {  # $1 = 视频项目目录；$2 = :root 里的区块内容；$3 = 期望输出含的片段（"无输出" = 不该有任何 CRAFT-007 行）
+    printf '<style>\n:root {\n%s\n}\n</style>\n' "$2" > "$1/index.html"
+    res=$(cd "$1" && fail=0 warn=0 && brand_tokens_check)
+    if [ "$3" = "无输出" ]; then [ -z "$res" ] || bad "CRAFT-007 夹具误报：$res"
+    else printf '%s\n' "$res" | grep -qF "$3" || bad "CRAFT-007 夹具没报出「$3」，实际：$res"; fi
+  }
+  local ok_block; ok_block=$(printf '/* brand:tokens */\n%s\n--brand-accent: #1A1D22;\n--brand-text-primary-dark: #F6F7F9;\n/* /brand:tokens */' "$cmt")
+  fx_brand "$FX/repo/brand/promo/x" "$ok_block" "✅ brand:tokens 区块 2 个变量"
+  fx_brand "$FX/repo/brand/promo/x" "--brand-accent: #1A1D22;" "缺 /* brand:tokens */"
+  fx_brand "$FX/repo/brand/promo/x" "$(printf '/* brand:tokens — %s\n--brand-accent: #1A1D22;\n/* /brand:tokens */' "$cmt")" "各自单独成行"
+  fx_brand "$FX/repo/brand/promo/x" "$(printf '/* brand:tokens */\n--brand-accent: #1A1D22;\n/* /brand:tokens */')" "下一行要是一条注释"
+  fx_brand "$FX/repo/brand/promo/x" "${ok_block/\#F6F7F9/#FFFFFF}" "tokens 里是 #F6F7F9"
+  fx_brand "$FX/repo/brand/promo/x" "${ok_block/--brand-text-primary-dark/--brand-dark-text-primary}" "对不上 meta.roles"
+  fx_brand "$FX/plain" "--brand-accent: #1A1D22;" "无输出"
+  [ "$fail" = "$before3" ] && ok "品牌区块检查夹具：正例通过，反例全部报出（CRAFT-007）"
+}
+
+# 品牌参数区块（CRAFT-007）：在视频项目目录内调用。上级目录有 brand/DESIGN.md 时，index.html 必须有单独成行的
+# /* brand:tokens */ … /* /brand:tokens */ 区块，起始标记下一行是命令注释，其余行只放 --brand-* 变量；
+# 品牌目录是 profile-2 tokens 时按「--brand-<角色>[-<模式>]」逐个核对变量值。
+brand_tokens_check() {
+  local line
+  while IFS= read -r line; do
+    case "$line" in
+      OK\ *) ok "${line#OK }" ;;
+      BAD\ *) bad "${line#BAD }" ;;
+      WARN\ *) wrn "${line#WARN }" ;;
+    esac
+  done < <(node - 2>&1 <<'JS'
+const fs = require("fs"), p = require("path");
+const out = (k, m) => console.log(`${k} ${m}（CRAFT-007）`);
+try {
+  let brand = null;
+  for (let d = process.cwd(); ; d = p.dirname(d)) {
+    if (fs.existsSync(p.join(d, "brand", "DESIGN.md"))) { brand = p.join(d, "brand"); break; }
+    if (d === p.dirname(d)) break;
+  }
+  if (!brand) process.exit(0);
+  const rel = p.relative(process.cwd(), brand) || ".";
+  const lines = fs.readFileSync("index.html", "utf8").split("\n");
+  const s = lines.findIndex(l => l.trim() === "/* brand:tokens */");
+  const e = s < 0 ? -1 : lines.findIndex((l, i) => i > s && l.trim() === "/* /brand:tokens */");
+  if (s < 0 || e < 0) {
+    out("BAD", lines.some(l => l.includes("brand:tokens"))
+      ? "brand:tokens 区块的起止标记要各自单独成行，逐字写成 /* brand:tokens */ 与 /* /brand:tokens */"
+      : `上级目录有品牌目录 ${rel}，index.html 缺 /* brand:tokens */ … /* /brand:tokens */ 区块`);
+    process.exit(0);
+  }
+  if (!(e > s + 1 && /^\/\*.*\S.*\*\/$/.test(lines[s + 1].trim()) && !lines[s + 1].includes("brand:tokens")))
+    out("BAD", "brand:tokens 起始标记的下一行要是一条注释，写这次运行的完整读取命令");
+  const vars = [];
+  for (const l of lines.slice(s + 2, e)) {
+    if (!l.trim()) continue;
+    const m = l.match(/^\s*(--brand-[A-Za-z0-9-]+)\s*:\s*([^;]+?)\s*;\s*$/);
+    if (m) vars.push([m[1], m[2]]); else out("BAD", `brand:tokens 区块里有命令输出以外的行：${l.trim()}`);
+  }
+  if (!vars.length) { out("BAD", "brand:tokens 区块里没有 --brand-* 变量"); process.exit(0); }
+  const tf = p.join(brand, "tokens.json");
+  const t = fs.existsSync(tf) ? JSON.parse(fs.readFileSync(tf, "utf8")) : null;
+  if (!t || !t.meta || !t.meta.roles) { out("WARN", `${rel} 不是 profile-2 tokens，区块值未机械核对，按 DESIGN.md 写明的来源人工核对`); process.exit(0); }
+  const map = {};
+  for (const [k, v] of Object.entries(t.meta.roles)) {
+    if (typeof v !== "string") continue;
+    const base = "--brand-" + k.replace(/\./g, "-");
+    map[base] = [k, null];
+    for (const md of t.meta.modes || []) map[`${base}-${md}`] = [k, md];
+  }
+  let good = 0;
+  for (const [name, got] of vars) {
+    if (!map[name]) { out("BAD", `${name} 对不上 meta.roles 里的角色，变量名应为 --brand-<角色>[-<模式>]`); continue; }
+    const [k, md] = map[name];
+    const f = !md || md === t.meta.defaultMode ? "tokens.resolved.json" : `tokens.resolved.${md}.json`;
+    let want;
+    try { want = t.meta.roles[k].split(".").reduce((o, x) => o[x], JSON.parse(fs.readFileSync(p.join(brand, f), "utf8"))).$value; } catch { want = undefined; }
+    if (want === undefined) out("BAD", `${name}：读不到 ${rel}/${f} 里的 ${t.meta.roles[k]}`);
+    else if (String(want).toLowerCase() !== got.toLowerCase()) out("BAD", `${name} 是 ${got}，tokens 里是 ${want}，重跑区块注释里的命令并整体替换区块`);
+    else good++;
+  }
+  if (good === vars.length) out("OK", `brand:tokens 区块 ${good} 个变量与 ${rel} 的 tokens 一致`);
+} catch (err) { out("BAD", `品牌区块检查出错：${err.message}`); }
+JS
+)
 }
 
 project_check() {
@@ -122,6 +213,7 @@ project_check() {
       bad ".hf-font-cache 里有文件：渲染时联网下载了字体（FONT-001）"
     fi
     echo "$body" | perl -ne 'exit 1 if /<audio\b(?![^>]*\bid=)/' && ok "<audio> 都有 id（HF-004）" || bad "有 <audio> 缺 id，成片会无声（HF-004）"
+    brand_tokens_check
   elif ls ./*.py >/dev/null 2>&1; then
     local py; py=$(cat ./*.py | perl -pe 's/#.*$//')
     ok "Manim 项目，检查场景文件"
