@@ -18,7 +18,7 @@ Skill 正文用中文写成，和 Agent 对话用什么语言都可以。
 | 选风格 | [风格索引](references/styles/00-index.md) |
 | 建项目、锁版本、字体 | [flow-setup](references/flow-setup.md)、[HF-001](references/hyperframes.md)、[FONT-001](references/fonts.md) |
 | 逐帧精确、不漂移的动画 | [确定性规则](references/determinism.md) |
-| 分镜、字号、节拍网格、品牌色 | [工艺规则](references/craft.md) |
+| 分镜、字号、节拍网格、品牌色、品牌目录与字标 | [工艺规则](references/craft.md) |
 | 配乐、音效、响度 | [音频规则](references/audio.md) |
 | 公式、几何、算法 | [Manim 档](references/manim.md) |
 | 验收与交付 | [flow-verify](references/flow-verify.md) |
@@ -38,7 +38,7 @@ Skill 正文用中文写成，和 Agent 对话用什么语言都可以。
 ```text
 SKILL.md                 入口：适用范围、红线、路由
 check.sh                 不带参数自检；bash check.sh <项目目录> 查项目
-references/              32 张规则卡（HF、DET、CRAFT、AUD、FONT、MANIM）、3 个流程、目录、编写约定
+references/              34 张规则卡（HF、DET、CRAFT、AUD、FONT、MANIM）、3 个流程、目录、编写约定
 references/styles/       风格包与索引
 scripts/fetch-font.mjs   从 Google Fonts 下载登记过的字体，中文按用字子集化，内联 @font-face
 scripts/synth.py         按音效表合成配乐底和 9 种音效（结果确定）

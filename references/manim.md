@@ -14,10 +14,11 @@
 ### MANIM-003 · 渲染命令
 - 触发: 预览、抽帧、出成片
 - 规则:
-  - 草稿：`manim -ql --disable_caching scene.py <Scene>`（854×480、15fps）
+  - 草稿：`manim -ql --disable_caching --frame_rate 30 scene.py <Scene>`（854×480、30fps）
   - 末帧静图：加 `-s`，产物在 `media/images/<文件名>/`
   - 成片：`manim -qh --disable_caching --frame_rate 30 scene.py <Scene>`（1920×1080、30fps），产物在 `media/videos/<文件名>/1080p30/<Scene>.mp4`
   - 竖屏：成片命令再加 `--resolution 1080,1920`，产物目录变为 `1920p30/`
+- 为什么: `-ql` 默认 15fps，而 `MANIM-004` 的 `Paced` 按 `FPS = 30` 排整帧；草稿不加 `--frame_rate 30` 时，在草稿上核对的帧数与拍点和成片对不上
 - 验证: 按 `flow-verify.md` 第 1 步用 ffprobe 核对分辨率、帧率、帧数
 
 ### MANIM-004 · 确定性与节奏

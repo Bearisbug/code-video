@@ -2,7 +2,7 @@
 
 按顺序执行，每步后面是验证方法。`<skill>` 指本 Skill 的根目录。纯 Manim 项目只做第 1、4 步和末尾「Manim 档」一节。
 
-1. **建目录**：在用户指定位置建 `<项目名>/`，默认结构：
+1. **建目录**：用户指定了位置就建在那里；没指定且正在某个产品的代码仓库里工作时，默认建在仓库根的 `brand/promo/<slug>/`（slug 用小写英文加连字符描述这支视频，如 `launch-10s`），并在其中加 `.gitignore` 忽略 `node_modules/`、`.venv/`、`snapshots/`、`.hf-font-cache/`；两者都不满足时问用户放哪。默认结构（下图的 `<项目名>/` 即该目录）：
    ```
    <项目名>/
      index.html        组合文件（HyperFrames 档）或 scene.py（Manim 档）

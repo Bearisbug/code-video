@@ -23,7 +23,7 @@ description: 用代码制作视频：动态图形、品牌片头与字标演绎�
 2. `snapshot` 一律写成 `env -u GEMINI_API_KEY npx hyperframes snapshot …`，禁止把画面发给外部模型（`HF-003`）。
 3. 画面只由时间 t 决定：禁止墙钟时间、未设种子的随机、定时器、`requestAnimationFrame` 循环、CSS transition、逐帧累积状态（`DET-001`–`DET-004`）。
 4. 分镜表经用户明确确认后才写代码（`CRAFT-001`）。
-5. 视觉取值只来自选定风格包；风格包的参考节拍只借节奏，禁止照搬原作题材（`CRAFT-002`、`CRAFT-003`）。
+5. 视觉取值只来自选定风格包；项目有品牌目录时，强调色、字体与标志取自品牌目录，字标与 Logo 用母版路径（`CRAFT-002`、`CRAFT-007`、`CRAFT-008`）。风格包的参考节拍只借节奏，禁止照搬原作题材（`CRAFT-003`）。
 6. 字体、库、音频全部放进项目本地，渲染时不联网（`HF-007`、`FONT-001`）。
 7. `check` 通过才渲染，渲染带 `--strict`（`HF-006`）；交付前按 `flow-verify.md` 核对帧数、响度与联系表。
 8. 每轮结束回收临时文件；HyperFrames 浏览器缓存全局复用一份，不得删除（`HF-008`）。
@@ -42,7 +42,7 @@ description: 用代码制作视频：动态图形、品牌片头与字标演绎�
 | 选风格、写分镜 | [references/styles/00-index.md](references/styles/00-index.md) 与选定的风格包 |
 | HyperFrames 版本、命令、组合契约、查官方文档 | [references/hyperframes.md](references/hyperframes.md) |
 | 动画写法是否会逐帧出错 | [references/determinism.md](references/determinism.md) |
-| 分镜、文字大小、节拍、多场景一致 | [references/craft.md](references/craft.md) |
+| 分镜、文字大小、节拍、多场景一致、品牌参数、字标与 Logo | [references/craft.md](references/craft.md) |
 | 配乐、音效、响度 | [references/audio.md](references/audio.md) |
 | 字体选择与下载 | [references/fonts.md](references/fonts.md) |
 | 公式、几何、函数、算法讲解 | [references/manim.md](references/manim.md) |

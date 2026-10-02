@@ -18,7 +18,7 @@ The skill text is written in Chinese. You can talk to the agent in any language.
 | Choosing a look | [Style index](references/styles/00-index.md) |
 | Project setup, pinned versions, fonts | [flow-setup](references/flow-setup.md), [HF-001](references/hyperframes.md), [FONT-001](references/fonts.md) |
 | Frame-accurate animation that never drifts | [Determinism rules](references/determinism.md) |
-| Storyboard, text size, beat grid, brand colors | [Craft rules](references/craft.md) |
+| Storyboard, text size, beat grid, brand colors, brand folder and wordmarks | [Craft rules](references/craft.md) |
 | Music, sound effects, loudness | [Audio rules](references/audio.md) |
 | Formulas, geometry, algorithms | [Manim tier](references/manim.md) |
 | Acceptance and delivery | [flow-verify](references/flow-verify.md) |
@@ -38,7 +38,7 @@ Out of scope: AI-generated footage (text-to-video models), live-action editing, 
 ```text
 SKILL.md                 entry: scope, red lines, routing
 check.sh                 self-check (no args) or project check (bash check.sh <project>)
-references/              32 rule cards (HF, DET, CRAFT, AUD, FONT, MANIM), 3 flows, catalog, conventions
+references/              34 rule cards (HF, DET, CRAFT, AUD, FONT, MANIM), 3 flows, catalog, conventions
 references/styles/       style packs and index
 scripts/fetch-font.mjs   download registered fonts from Google Fonts, subset CJK, inline @font-face
 scripts/synth.py         synthesize a music bed and 9 sound effects from a cue sheet (deterministic)

@@ -2,7 +2,7 @@
 
 ### FONT-001 · 字体下载到项目本地
 - 触发: 组合文件要显示文字
-- 规则: 只用下方登记表里的字体。在视频项目根目录运行 `node <skill>/scripts/fetch-font.mjs --family "<家族名>" --weights <字重> [--text-file fonts/chars.txt]`：它把 woff2 下载到 `fonts/`，并把 `@font-face` 直接写进 `index.html` 第一个 `<style>` 里的 `/* fonts:<slug> */` 区块。中文字体必须加 `--text-file`，文件内容是组合里出现的全部中文，改了文案要重跑（会替换同一区块）。`font-family` 字体栈里只写已内联声明的家族和通用族名（`sans-serif`、`serif`、`monospace`），例如 `"Courier Prime", monospace`。禁止在字体栈里写系统字体名当后备（`"Courier New"`、Arial、PingFang、微软雅黑等）；禁止用 `<link>` 或 `@import` 引入字体样式表
+- 规则: 只用下方登记表里的字体，或品牌目录字体配置里的家族（`CRAFT-007`）。在视频项目根目录运行 `node <skill>/scripts/fetch-font.mjs --family "<家族名>" --weights <字重> [--text-file fonts/chars.txt]`：它把 woff2 下载到 `fonts/`，并把 `@font-face` 直接写进 `index.html` 第一个 `<style>` 里的 `/* fonts:<slug> */` 区块。中文字体必须加 `--text-file`，文件内容是组合里出现的全部中文，改了文案要重跑（会替换同一区块）。品牌字体能从 Google Fonts 取得时同样用 `fetch-font.mjs`；取不到时把品牌目录里的字体文件复制到 `fonts/`，在同一个 `<style>` 里手写 `@font-face`（`src: url("fonts/<文件>")`），许可以品牌 `DESIGN.md` 的字体记录为准，不进登记表。`font-family` 字体栈里只写已内联声明的家族和通用族名（`sans-serif`、`serif`、`monospace`），例如 `"Courier Prime", monospace`。禁止在字体栈里写系统字体名当后备（`"Courier New"`、Arial、PingFang、微软雅黑等）；禁止用 `<link>` 或 `@import` 引入字体样式表。品牌 tokens 里的字体栈带系统字体名时不照搬，按本条重写
 - 为什么: 0.8.96 的编译器只识别 HTML 里直接写的 `@font-face`。本机实测：`font-family` 声明配 `<link>` 引入的本地字体，渲染时仍会去 Google Fonts 下载（9 个文件），并覆盖本地子集，而 `check` 照样通过；blind-02 里这一项让首次渲染多花了 6 分钟。改成内联后下载数为 0。字体栈里的系统字体名也会触发下载：移植实测 `'CP','Courier New',monospace` 在首选字体已内联的情况下，渲染时仍下载了替代字体，去掉 `'Courier New'` 后下载数为 0。系统字体换一台机器就缺字，lint 会报 `font_family_without_font_face`
 - 验证: 渲染前 `export HYPERFRAMES_FONT_CACHE_DIR="$PWD/.hf-font-cache"`，渲染后该目录不存在或为空（有文件说明渲染时联网下载了字体）；抽帧里各字重粗细分明
 
