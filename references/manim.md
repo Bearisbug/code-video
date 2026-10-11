@@ -2,8 +2,8 @@
 
 ### MANIM-001 · 什么时候用 Manim
 - 触发: 选渲染层
-- 规则: 内容以公式推导、几何证明、函数图像、算法步骤演示为主时用 Manim CE；其余一律用 HyperFrames。同一支视频需要两者时，分别渲染，再用 ffmpeg 拼接（`flow-verify.md` 附拼接命令）
-- 为什么: Manim 的 `MathTex`/`MathTypst`、`Transform` 与坐标系原生支持公式与图形变换；网页栈写公式动画要额外引 KaTeX 并手写逐项动画
+- 规则: 画面以公式推导、几何证明、函数图像、坐标系为主时用 Manim CE；其余一律用 HyperFrames，包括用方块、箭头、流程图讲的算法与机制（排序、哈希、网络请求这类，按 `CRAFT-017`）。同一支视频需要两者时，分别渲染，再用 ffmpeg 拼接（`flow-verify.md` 附拼接命令）
+- 为什么: Manim 的 `MathTex`/`MathTypst`、`Transform` 与坐标系原生支持公式与图形变换；网页栈写公式动画要额外引 KaTeX 并手写逐项动画。机制图解放在 HyperFrames 档，能用风格包与 `check` 的对比度、版面检查，Manim 档没有风格包，`check.sh` 能查的项也更少
 
 ### MANIM-002 · 环境
 - 触发: 首次在项目里用 Manim

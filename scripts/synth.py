@@ -1,14 +1,16 @@
 """按音效清单（cue JSON）合成配乐与音效，输出 48kHz 立体声 16-bit WAV。同一清单、同一 seed 输出逐字节一致。
 
 用法: python synth.py cues.json out.wav        （在 uv 建的 .venv 里运行，只依赖 numpy）
+相隔 1–40ms 的两个事件会在 stderr 告警（AUD-006）。
 
 清单格式（字段含义见 references/audio.md）:
 {
   "duration": 10.0, "bpm": 120, "seed": 1,
+  "space": {"t60": 1.1, "predelay": 0.012},      （可选：共用混响；不写则不加）
   "bed": {"style": "pluck", "chords": ["C4 E4 G4", "A3 C4 E4"], "drums": true,
-          "start": 0.5, "end": 9.5, "gain": 0.5,
+          "start": 0.5, "end": 9.5, "gain": 0.5, "send": 0.15,
           "automation": [[4.9, 5.0, 0.03], [5.0, 9.5, 1.2]]},
-  "events": [{"t": 0.45, "sfx": "pop", "gain": 1.0, "pitch": 1.0, "dur": 0.3, "pan": 0.0}]
+  "events": [{"t": 0.45, "sfx": "pop", "gain": 1.0, "pitch": 1.0, "dur": 0.3, "pan": 0.0, "send": 0.2}]
 }
 """
 import json
@@ -201,15 +203,45 @@ def place(buf, seg, at):
     buf[s:s + seg.size] += seg
 
 
+# ---- 共用空间（可选）：清单顶层写 "space" 时，全部声音按各自送混响比例进同一个混响 ----
+SEND = {"tick": 0.15, "pop": 0.2, "blip": 0.15, "chime": 0.4, "whoosh": 0.6, "riser": 0.5,
+        "impact": 0.25, "glitch": 0.1, "alarm": 0.2, "bed": 0.15}
+
+
+def room(bus, spec, seed):
+    """衰减噪声冲激响应（T60 内衰减 60dB，预延迟后接 3 个早期反射），左右声道用不同种子，FFT 卷积。"""
+    t60, pre = spec.get("t60", 1.1), spec.get("predelay", 0.012)
+    rng = np.random.default_rng(seed)
+    n = bus.size + int((pre + t60) * SR)
+    size = 1 << (n - 1).bit_length()
+    spec_bus = np.fft.rfft(bus, size)
+    wet = []
+    for _ in range(2):
+        tail = lowpass(rng.standard_normal(int(t60 * SR)), 5000) * 10 ** (-3 * tt(t60) / t60)
+        ir = np.zeros(int(pre * SR) + tail.size)
+        ir[int(pre * SR):] = tail
+        for at, g in ((0.005, 0.5), (0.011, 0.35), (0.019, 0.25)):
+            ir[int((pre + at) * SR)] += g * np.abs(tail).max()
+        ir /= np.sqrt((ir ** 2).sum())
+        wet.append(np.fft.irfft(spec_bus * np.fft.rfft(ir, size), size)[: bus.size])
+    return wet
+
+
 def main(cue_path, out_path):
     cue = json.load(open(cue_path, encoding="utf-8"))
     total, bpm = float(cue["duration"]), float(cue.get("bpm", 120))
     rng = np.random.default_rng(cue.get("seed", 1))
     left, right = np.zeros(int(total * SR)), np.zeros(int(total * SR))
+    bus = np.zeros(int(total * SR))
     if cue.get("bed"):
         b = bed(cue["bed"], total, bpm, rng)
         left += b
         right += b
+        bus += b * cue["bed"].get("send", SEND["bed"])
+    times = sorted(ev["t"] for ev in cue.get("events", []))
+    close = [(a, b) for a, b in zip(times, times[1:]) if 0.001 <= b - a < 0.04]
+    if close:
+        print(f"⚠️ 相隔 1–40ms 的两个音效听起来是一声发糊的重音，每对只留一个（AUD-006；同一时刻叠放算一个复合音，不在此列）：{close}", file=sys.stderr)
     for ev in cue.get("events", []):
         kind = ev["sfx"]
         if kind not in SFX:
@@ -221,6 +253,11 @@ def main(cue_path, out_path):
         pan = ev.get("pan", 0.0)
         place(left, seg * np.sqrt((1 - pan) / 2) * np.sqrt(2), ev["t"])
         place(right, seg * np.sqrt((1 + pan) / 2) * np.sqrt(2), ev["t"])
+        place(bus, seg * ev.get("send", SEND[kind]), ev["t"])
+    if cue.get("space"):
+        wl, wr = room(bus, cue["space"], cue.get("seed", 1) + 1000)
+        left += wl
+        right += wr
     mix = np.tanh(np.stack([left, right], axis=1))
     peak = np.abs(mix).max() or 1.0
     mix = mix / peak * 10 ** (-3 / 20)

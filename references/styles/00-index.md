@@ -7,6 +7,7 @@
 | `shape-morph` | 一形贯穿形变 | SVG/DOM | 16:9、9:16 | 品牌片头与字标、理念短片、功能图标串讲、情绪短视频 | 草稿 | [shape-morph.md](shape-morph.md) |
 | `fui-hud` | 电影科幻界面 | Three.js + DOM | 16:9 | 科技发布 teaser、揭晓与锁定时刻、数据大屏开机、任务简报 | 草稿 | [fui-hud.md](fui-hud.md) |
 | `mascot-story` | 吉祥物小剧场 | SVG/DOM + canvas 颗粒 | 16:9、9:16 | App 与产品宣传片、功能讲解、品牌吉祥物短片、「问题 → 解法」叙事 | 已盲测 | [mascot-story.md](mascot-story.md) |
+| `light-launch` | 浅底发布片 | DOM/SVG | 16:9 | 软件产品与功能发布片、AI 工具宣传片、界面复刻功能演示、无旁白科普讲解；品牌限制彩色或渐变时的默认包 | 草稿 | [light-launch.md](light-launch.md) |
 
 状态含义：`草稿` 表示数值取自风格拆解或原作源码、尚未通过换题材盲测；`已盲测` 表示至少一次换题材盲测按包内「验收清单」全部通过。
 
@@ -16,4 +17,4 @@
 
 逐帧手绘、等轴 2.5D、扁平矢量、线条动画、3D 渲染、贴纸风科普、拼贴剪贴、弥散渐变玻璃拟态、几何构成包豪斯、复古 Synthwave、像素风、液态流动、综艺花字（竖屏）、数学讲解（Manim）。
 
-现有三个包都是 HyperFrames 档。Manim 数学讲解没有风格包，按上面的路径在分镜表头写明配色 hex、字体、缓动。
+现有四个包都是 HyperFrames 档。科普讲解（数学推导以外）没有指定风格时用 `light-launch`（`CRAFT-017`）。Manim 数学讲解没有风格包，按上面的路径在分镜表头写明配色 hex、字体、缓动。

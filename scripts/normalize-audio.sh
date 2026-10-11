@@ -16,15 +16,18 @@ trap 'rm -rf "$tmpd"' EXIT
 pass2=$(ffmpeg -hide_banner -nostats -y -i "$in" -vn -af "loudnorm=I=${target}:TP=${tp}:LRA=11:measured_I=${mi}:measured_TP=${mtp}:measured_LRA=${mlra}:measured_thresh=${mth}:offset=${off}:linear=true:print_format=json" -ar 48000 "$tmp" 2>&1)
 mv -f "$tmp" "$out"
 mode=$(field normalization_type "$pass2")
+plr=$(awk -v a="$mtp" -v b="$mi" 'BEGIN{printf "%.2f", a-b}')
 
-# 复核用 ebur128（loudnorm 自身的读数与 ebur128 可差 0.5 LU）
-summary=$(ffmpeg -hide_banner -nostats -i "$out" -af ebur128=peak=true -f null - 2>&1 | sed -n '/Summary:/,$p')
-oi=$(awk '$1=="I:"{print $2; exit}' <<<"$summary"); op=$(awk '$1=="Peak:"{print $2; exit}' <<<"$summary")
+# 复核响度用 ebur128（loudnorm 自身的读数与 ebur128 可差 0.5 LU）
+summary=$(ffmpeg -hide_banner -nostats -i "$out" -af ebur128 -f null - 2>&1 | sed -n '/Summary:/,$p')
+oi=$(awk '$1=="I:"{print $2; exit}' <<<"$summary")
+# 真峰值用 loudnorm 读（两位小数）；ebur128 的 Peak 实测会低于采样峰值
+op=$(field input_tp "$(ffmpeg -hide_banner -nostats -i "$out" -af loudnorm=print_format=json -f null - 2>&1 | sed -n '/^{/,/^}/p')")
 if awk -v o="$oi" -v t="$target" 'BEGIN{d=o-t; exit !(d > 0.5 || d < -0.5)}'; then
-  echo "⚠️ 输出 ${oi} LUFS，偏离目标 ${target} 超过 0.5 LU（loudnorm 模式：${mode}）。多为最响事件相对音床太响：降低最响事件的 gain 或提高音床 gain，重新合成后再归一。" >&2
+  echo "⚠️ 输出 ${oi} LUFS，偏离目标 ${target} 超过 0.5 LU（loudnorm 模式：${mode}）。多为最响事件相对音床太响：按 AUD-005 先提高音床 gain，仍不够再降最响事件的 gain，重新合成后再归一。" >&2
 fi
 if [ "$mode" = "dynamic" ]; then
   lim=$(awk -v a="$tp" -v b="$target" 'BEGIN{print a-b}')
-  echo "⚠️ loudnorm 进入 dynamic 模式，事件之间的电平差会被压平。linear 模式要求输入真峰值减响度不超过 ${lim} dB（本次 ${mtp} dBTP、${mi} LUFS）且 LRA 不超过 11（本次 ${mlra}）：降低真峰值最高的音效（常见是 impact、whoosh）的 gain 或提高音床 gain，重新合成后再归一。" >&2
+  echo "⚠️ loudnorm 进入 dynamic 模式，事件之间的电平差会被压平。linear 模式要求输入真峰值减响度不超过 ${lim} dB（本次 ${mtp} dBTP、${mi} LUFS，差 ${plr}）且 LRA 不超过 11（本次 ${mlra}）。按 AUD-005 分两步改，不要换 seed：先按增益表提高音床 gain，最响事件保持风格包规定值；仍超门槛再把最响事件的 gain 降 0.1–0.2。改完重新合成再归一。" >&2
 fi
-printf '{"input_lufs": %s, "output_lufs": %s, "output_true_peak_dbtp": %s, "loudnorm_mode": "%s"}\n' "$mi" "$oi" "$op" "$mode"
+printf '{"input_lufs": %s, "input_tp": %s, "input_plr": %s, "output_lufs": %s, "output_true_peak_dbtp": %s, "loudnorm_mode": "%s"}\n' "$mi" "$mtp" "$plr" "$oi" "$op" "$mode"

@@ -27,5 +27,7 @@
 | JetBrains Mono | 等宽：编号、代码、数据流 | 100–800 可变 | `ofl/jetbrainsmono` | OFL-1.1 |
 | Share Tech Mono | 等宽科技标签 | 400 | `ofl/sharetechmono` | OFL-1.1 |
 | Courier Prime | 打字机等宽：字幕、贴纸、手写感标题（2026-10-01 核对） | 400、700，各带斜体 | `ofl/courierprime` | OFL-1.1 |
+| Inter | 拉丁无衬线正文、标题、快切单词（2026-10-07 核对） | 100–900 可变 | `ofl/inter` | OFL-1.1 |
+| Instrument Serif | 拉丁衬线字标与标题（2026-10-07 核对） | 400，带斜体 | `ofl/instrumentserif` | OFL-1.1 |
 
 新增家族：在 google/fonts 仓库确认目录下有 `OFL.txt` 或 `LICENSE.txt`（Apache-2.0），在本表加一行写明核对日期；非 google/fonts 来源的字体须另附许可证原文链接。

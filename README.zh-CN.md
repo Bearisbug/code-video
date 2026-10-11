@@ -1,12 +1,12 @@
 <h1 align="center">code-video</h1>
 
-<p align="center">用代码做视频的 Agent Skill：动态图形、品牌开场、产品宣传片、数学讲解，渲染成带合成配乐与音效的 MP4。</p>
+<p align="center">用代码做视频的 Agent Skill：动态图形、品牌开场、产品发布片、科技科普、数学讲解，渲染成带合成配乐与音效的 MP4。</p>
 
 <p align="center"><a href="README.md">English</a> · <b>简体中文</b></p>
 
 ---
 
-`code-video` 带着 AI 编程 Agent 从一句需求走到一支验收过的 MP4。Agent 先写分镜并等你确认，再选风格包，写 HTML 合成（由 [HyperFrames](https://github.com/heygen-com/hyperframes) 逐帧渲染）或 [Manim](https://www.manim.community/) 场景，合成配乐，渲染，最后逐项核对帧数、响度、音画同步和风格清单。
+`code-video` 带着 AI 编程 Agent 从一句需求走到一支验收过的 MP4。Agent 先给三个构思、写分镜并等你确认，再选风格包，写 HTML 合成（由 [HyperFrames](https://github.com/heygen-com/hyperframes) 逐帧渲染）或 [Manim](https://www.manim.community/) 场景，合成配乐，渲染，最后逐项核对帧数、节奏、段落衔接、响度、音画同步和风格清单。
 
 Skill 正文用中文写成，和 Agent 对话用什么语言都可以。
 
@@ -19,11 +19,13 @@ Skill 正文用中文写成，和 Agent 对话用什么语言都可以。
 | 建项目、锁版本、字体 | [flow-setup](references/flow-setup.md)、[HF-001](references/hyperframes.md)、[FONT-001](references/fonts.md) |
 | 逐帧精确、不漂移的动画 | [确定性规则](references/determinism.md) |
 | 分镜、字号、节拍网格、品牌色、品牌目录与字标 | [工艺规则](references/craft.md) |
+| 三个构思、节奏、段落衔接、镜头运动、快速移动 | [工艺规则](references/craft.md)（CRAFT-009–014） |
+| 参考片拆解、用 HTML 复刻产品界面、无旁白科普讲解、画面事实核对 | [工艺规则](references/craft.md)（CRAFT-015–018） |
 | 配乐、音效、响度 | [音频规则](references/audio.md) |
 | 公式、几何、算法 | [Manim 档](references/manim.md) |
 | 验收与交付 | [flow-verify](references/flow-verify.md) |
 
-不做：AI 生成画面（文生视频模型）、实拍剪辑、TTS 配音、App 内 UI 动效。
+不做：AI 生成画面（文生视频模型）、实拍与录屏剪辑、TTS 配音、App 内 UI 动效。
 
 ## 工作方式
 
@@ -31,19 +33,19 @@ Skill 正文用中文写成，和 Agent 对话用什么语言都可以。
 - **工具链锁版本并加护栏。** HyperFrames 锁定 0.8.96，按项目安装；关闭遥测和自动安装官方 Skill，快照不把画面发给外部模型。
 - **渲染时不联网。** 字体按用字子集化后以内联 `@font-face` 嵌入，库从 `node_modules` 加载。渲染过程下载了任何东西，验收即不通过。
 - **风格包给实测参数。** 每个包写明色值、1080p 下的字号、缓动参数、时长和音效点位，并列出原作题材的禁用清单，防止照搬。
-- **先做机械验收。** `check.sh` 既查 Skill 自身，也查视频项目；`analyze.py` 在成片上测运动区间、音频起音点、音画偏差、暗像素占比和事件响度。
+- **先做机械验收。** `check.sh` 既查 Skill 自身，也查视频项目；`analyze.py` 在成片或参考片上测运动区间、音频起音点、音画偏差、暗像素占比、事件响度、节奏（静止占比、硬切、快切段、镜头时长分布）和浅底留白。
 
 ## 目录
 
 ```text
 SKILL.md                 入口：适用范围、红线、路由
 check.sh                 不带参数自检；bash check.sh <项目目录> 查项目
-references/              34 张规则卡（HF、DET、CRAFT、AUD、FONT、MANIM）、3 个流程、目录、编写约定
+references/              46 张规则卡（HF、DET、CRAFT、AUD、FONT、MANIM）、3 个流程、目录、编写约定
 references/styles/       风格包与索引
 scripts/fetch-font.mjs   从 Google Fonts 下载登记过的字体，中文按用字子集化，内联 @font-face
-scripts/synth.py         按音效表合成配乐底和 9 种音效（结果确定）
-scripts/normalize-audio.sh  两遍 loudnorm 到 −14 LUFS、真峰值上限 −2 dBTP，用 ebur128 复核
-scripts/analyze.py       运动区间、起音点、音画偏差、暗像素占比、最响事件
+scripts/synth.py         按音效表合成配乐底和 9 种音效，可选共用混响（结果确定）
+scripts/normalize-audio.sh  两遍 loudnorm 到 −14 LUFS、真峰值上限 −2 dBTP，报告 linear 或 dynamic 模式
+scripts/analyze.py       运动区间、起音点、音画偏差、暗像素占比、最响事件、节奏、浅底留白
 ```
 
 | 风格包 | 画面 | 渲染层 |
@@ -51,8 +53,9 @@ scripts/analyze.py       运动区间、起音点、音画偏差、暗像素占�
 | `shape-morph` | 一个扁平形状一路变形讲完故事，纸张颗粒，圆形扩散换色 | SVG/DOM + GSAP MorphSVG |
 | `fui-hud` | 电影感科幻 HUD：单色青线框、辉光、锁定时切琥珀色 | Three.js + DOM |
 | `mascot-story` | 吉祥物讲「问题 → 解决」的故事，颗粒与线条抖动，打字机字幕 | SVG/DOM + canvas 颗粒 |
+| `light-launch` | 浅底发布片：黑白灰加一个强调色、小字大留白、元素接力过场、真静止停顿；也用于图解式科普 | DOM/SVG + GSAP |
 
-三个包的数值都来自逐帧拆解或原作源码，配方在 HyperFrames 0.8.96 上实测过。`mascot-story` 已标为「已盲测」：执行者只拿到 Skill 和一个无关题材，成片按包内验收清单全部通过。`shape-morph` 与 `fui-hud` 仍是「草稿」。
+三个包的数值都来自逐帧拆解或原作源码，配方在 HyperFrames 0.8.96 上实测过。`mascot-story` 已标为「已盲测」：执行者只拿到 Skill 和一个无关题材，成片按包内验收清单全部通过。`shape-morph`、`fui-hud` 与 `light-launch` 仍是「草稿」。
 
 ## 安装
 
@@ -83,16 +86,18 @@ HyperFrames 第一次渲染会下载锁定版本的 chrome-headless-shell（约 
 - 「做一支 10 秒科幻 HUD 预告：我们的代码审查工具扫过一个巨大的代码库，锁定一处隐藏的竞态条件。」
 - 「给我们的健身 App 做一支 20 秒宣传片，让一个可爱的吉祥物讲故事，要纸张颗粒质感和打字机字幕。」
 - 「做一支 20 秒讲解视频，用方块拼图证明 1 + 2 + … + n = n(n+1)/2，中文标题，配轻音乐。」
+- 「给我们的 AI 写作工具做一支 15 秒发布片，这是编辑器的三张截图，节奏照这个参考片，别做成 PPT。」
+- 「做一支 40 秒科普，给不懂技术的人讲清楚密码管理器是怎么保管密码的，不要配音，只用字幕。」
 
 ## 验证
 
 ```sh
 bash check.sh                      # Skill：链接、规则卡与目录一致、卡号引用、风格包章节、脚本语法、品牌区块夹具
-bash check.sh /path/to/project     # 项目：锁定版本、不联网、确定性模式、字体、品牌参数区块、帧数、响度
+bash check.sh /path/to/project     # 项目：分镜衔接列与事实清单、锁定版本、不联网、确定性模式、字体、品牌参数区块、帧数、响度
 ```
 
 这个 Skill 用盲测循环打磨：Agent 手里只有 Skill 和任务描述，三轮共做了 13 支视频，每次改规则都回到之前的任务复测。机械检查通过不等于画面合格，画面质量靠风格包验收清单和联系表目检。
 
 ## 许可证
 
-Skill 正文与脚本以 [MIT 许可证](LICENSE) 发布。仓库不打包任何第三方内容：HyperFrames（Apache-2.0）、GSAP（GreenSock Standard License）、Three.js（MIT）、Manim（MIT）和字体（SIL OFL 1.1）都由使用者按各自条款安装或下载。`shape-morph` 与 `fui-hud` 两个包描述的风格实测自一支第三方风格合集视频（作者未确认），包里只有参数，没有画面。
+Skill 正文与脚本以 [MIT 许可证](LICENSE) 发布。仓库不打包任何第三方内容：HyperFrames（Apache-2.0）、GSAP（GreenSock Standard License）、Three.js（MIT）、Manim（MIT）和字体（SIL OFL 1.1）都由使用者按各自条款安装或下载。`shape-morph` 与 `fui-hud` 两个包描述的风格实测自一支第三方风格合集视频（作者未确认），包里只有参数，没有画面。`light-launch` 包以及节奏、衔接、构思、镜头几条规则，吸收了 [onetake](https://github.com/feitangyuan/onetake)（PolyForm Noncommercial 1.0.0）案例成片的方法与实测数值，不含该仓库的文字、代码与画面。

@@ -1,12 +1,12 @@
 <h1 align="center">code-video</h1>
 
-<p align="center">An Agent Skill for making videos with code: motion graphics, brand intros, product promos and math explainers, rendered to MP4 with synthesized music and sound effects.</p>
+<p align="center">An Agent Skill for making videos with code: motion graphics, brand intros, product launch films, tech explainers and math explainers, rendered to MP4 with synthesized music and sound effects.</p>
 
 <p align="center"><b>English</b> · <a href="README.zh-CN.md">简体中文</a></p>
 
 ---
 
-`code-video` guides an AI coding agent from a one-line request to a verified MP4. The agent writes a storyboard and waits for your confirmation, picks a style pack, builds an HTML composition (rendered frame by frame by [HyperFrames](https://github.com/heygen-com/hyperframes)) or a [Manim](https://www.manim.community/) scene, synthesizes the soundtrack, renders, and then checks frame count, loudness, audio-visual sync and style against a checklist.
+`code-video` guides an AI coding agent from a one-line request to a verified MP4. The agent proposes three concepts, writes a storyboard and waits for your confirmation, picks a style pack, builds an HTML composition (rendered frame by frame by [HyperFrames](https://github.com/heygen-com/hyperframes)) or a [Manim](https://www.manim.community/) scene, synthesizes the soundtrack, renders, and then checks frame count, rhythm, scene transitions, loudness, audio-visual sync and style against a checklist.
 
 The skill text is written in Chinese. You can talk to the agent in any language.
 
@@ -19,11 +19,13 @@ The skill text is written in Chinese. You can talk to the agent in any language.
 | Project setup, pinned versions, fonts | [flow-setup](references/flow-setup.md), [HF-001](references/hyperframes.md), [FONT-001](references/fonts.md) |
 | Frame-accurate animation that never drifts | [Determinism rules](references/determinism.md) |
 | Storyboard, text size, beat grid, brand colors, brand folder and wordmarks | [Craft rules](references/craft.md) |
+| Concepts, rhythm, scene transitions, camera moves, fast motion | [Craft rules](references/craft.md) (CRAFT-009–014) |
+| Reference videos, product UI rebuilt in HTML, explainers without narration, fact-checking on-screen claims | [Craft rules](references/craft.md) (CRAFT-015–018) |
 | Music, sound effects, loudness | [Audio rules](references/audio.md) |
 | Formulas, geometry, algorithms | [Manim tier](references/manim.md) |
 | Acceptance and delivery | [flow-verify](references/flow-verify.md) |
 
-Out of scope: AI-generated footage (text-to-video models), live-action editing, TTS narration, and in-app UI animation.
+Out of scope: AI-generated footage (text-to-video models), live-action and screen-recording editing, TTS narration, and in-app UI animation.
 
 ## How it works
 
@@ -31,19 +33,19 @@ Out of scope: AI-generated footage (text-to-video models), live-action editing, 
 - **Pinned toolchain with guardrails.** HyperFrames is pinned to 0.8.96 and installed per project. Telemetry and automatic skill installation are switched off, and snapshots never send frames to external models.
 - **Nothing is fetched at render time.** Fonts are subset and embedded as inline `@font-face`, and libraries load from `node_modules`. A render that downloads anything fails verification.
 - **Style packs are measured, not described.** Each pack gives hex values, font sizes at 1080p, easing parameters, timing and sound cues, plus a list of the source work's subjects that must not be copied.
-- **Verification is mechanical first.** `check.sh` checks the skill itself and any video project; `analyze.py` measures motion, audio onsets, sync offsets, dark-pixel ratio and event loudness on the final MP4.
+- **Verification is mechanical first.** `check.sh` checks the skill itself and any video project; `analyze.py` measures motion, audio onsets, sync offsets, dark-pixel ratio, event loudness, rhythm (still ratio, hard cuts, fast-cut bursts, shot-length spread) and background coverage on the final MP4 or a reference video.
 
 ## What's inside
 
 ```text
 SKILL.md                 entry: scope, red lines, routing
 check.sh                 self-check (no args) or project check (bash check.sh <project>)
-references/              34 rule cards (HF, DET, CRAFT, AUD, FONT, MANIM), 3 flows, catalog, conventions
+references/              46 rule cards (HF, DET, CRAFT, AUD, FONT, MANIM), 3 flows, catalog, conventions
 references/styles/       style packs and index
 scripts/fetch-font.mjs   download registered fonts from Google Fonts, subset CJK, inline @font-face
-scripts/synth.py         synthesize a music bed and 9 sound effects from a cue sheet (deterministic)
-scripts/normalize-audio.sh  two-pass loudnorm to −14 LUFS / −2 dBTP ceiling, verified with ebur128
-scripts/analyze.py       motion spans, onsets, sync offsets, dark ratio, loudest events
+scripts/synth.py         synthesize a music bed and 9 sound effects from a cue sheet, optional shared reverb (deterministic)
+scripts/normalize-audio.sh  two-pass loudnorm to −14 LUFS / −2 dBTP ceiling, reports linear or dynamic mode
+scripts/analyze.py       motion spans, onsets, sync offsets, dark ratio, loudest events, rhythm, background coverage
 ```
 
 | Style pack | Look | Renderer |
@@ -51,8 +53,9 @@ scripts/analyze.py       motion spans, onsets, sync offsets, dark ratio, loudest
 | `shape-morph` | one flat shape morphing through a story, paper grain, circular color reveals | SVG/DOM + GSAP MorphSVG |
 | `fui-hud` | cinematic sci-fi HUD: monochrome cyan wireframe, bloom, lock-on switch to amber | Three.js + DOM |
 | `mascot-story` | a mascot tells a problem → solution story, grain and line boil, typewriter captions | SVG/DOM + canvas grain |
+| `light-launch` | light-ground launch film: black, white and grey with one accent, small type, element-to-element transitions, true pauses; also used for diagram explainers | DOM/SVG + GSAP |
 
-Every pack gives numbers from a frame-by-frame teardown or source code, with recipes tested on HyperFrames 0.8.96. `mascot-story` is marked `blind-tested`: an agent given only the skill and an unrelated subject passed its checklist. `shape-morph` and `fui-hud` are still `draft`.
+Every pack gives numbers from a frame-by-frame teardown or source code, with recipes tested on HyperFrames 0.8.96. `mascot-story` is marked `blind-tested`: an agent given only the skill and an unrelated subject passed its checklist. `shape-morph`, `fui-hud` and `light-launch` are still `draft`.
 
 ## Install
 
@@ -83,16 +86,18 @@ Ask the agent in plain language, for example:
 - "A 10-second sci-fi HUD teaser: our code-review tool scans a huge codebase and locks onto a hidden race condition."
 - "A 20-second promo for our fitness app where a cute mascot tells the story, with grainy paper texture and typewriter captions."
 - "A 20-second explainer proving 1 + 2 + … + n = n(n+1)/2 with block puzzles, with a Chinese title and light background music."
+- "A 15-second launch video for our AI writing tool. Here are three screenshots of the editor. Make it feel like this reference clip, not like a slideshow."
+- "A 40-second explainer for non-technical viewers on how a password manager keeps passwords safe. No voice-over, captions only."
 
 ## Validation
 
 ```sh
 bash check.sh                      # skill: links, rule cards vs catalog, card references, style pack sections, script syntax, brand-block fixtures
-bash check.sh /path/to/project     # project: pinned version, no network, determinism patterns, fonts, brand tokens block, frame count, loudness
+bash check.sh /path/to/project     # project: storyboard columns and fact list, pinned version, no network, determinism patterns, fonts, brand tokens block, frame count, loudness
 ```
 
 The skill was developed with a blind-test loop: agents that had only the skill and a task produced 13 videos across three rounds, and every rule change was re-checked against earlier tasks. A mechanical pass does not prove visual quality; the style pack checklists and a contact sheet review cover that.
 
 ## License
 
-Skill text and scripts are released under the [MIT License](LICENSE). Nothing third-party is bundled: HyperFrames (Apache-2.0), GSAP (GreenSock Standard License), Three.js (MIT), Manim (MIT) and fonts (SIL OFL 1.1) are installed or downloaded by the user under their own terms. The `shape-morph` and `fui-hud` packs describe styles measured from a third-party showcase video (author unconfirmed); they contain parameters, not footage.
+Skill text and scripts are released under the [MIT License](LICENSE). Nothing third-party is bundled: HyperFrames (Apache-2.0), GSAP (GreenSock Standard License), Three.js (MIT), Manim (MIT) and fonts (SIL OFL 1.1) are installed or downloaded by the user under their own terms. The `shape-morph` and `fui-hud` packs describe styles measured from a third-party showcase video (author unconfirmed); they contain parameters, not footage. The `light-launch` pack and the rhythm, transition, concept and camera rules take methods and measured numbers from the case films of [onetake](https://github.com/feitangyuan/onetake) (PolyForm Noncommercial 1.0.0); they contain no text, code or frames from that repository.

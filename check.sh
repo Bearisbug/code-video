@@ -184,6 +184,10 @@ project_check() {
   cd "$P" || exit 2
   echo "检查视频项目: $(pwd)"
   [ -f storyboard.md ] && ok "storyboard.md 存在（CRAFT-001）" || bad "缺 storyboard.md（CRAFT-001）"
+  if [ -f storyboard.md ]; then
+    grep -qE '^\|.*衔接.*\|' storyboard.md && ok "分镜表有「衔接」列（CRAFT-011）" || bad "分镜表缺「衔接」列（CRAFT-011）"
+    grep -q '事实清单' storyboard.md && ok "storyboard.md 有事实清单（CRAFT-018）" || bad "storyboard.md 缺事实清单（CRAFT-018）"
+  fi
 
   if [ -f index.html ]; then
     grep -q '"hyperframes": "0.8.96"' package.json 2>/dev/null && ok "hyperframes 锁定 0.8.96（HF-001）" || bad "package.json 未精确锁定 hyperframes 0.8.96（HF-001）"
