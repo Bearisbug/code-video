@@ -88,12 +88,12 @@ self_check() {
 
   # 品牌区块检查夹具（CRAFT-007）：正例零 ❌；反例各自报出对应问题；上级没有品牌目录时不检查
   FX=$(mktemp -d); trap 'rm -rf "$FX"' EXIT
-  mkdir -p "$FX/repo/brand/promo/x" "$FX/plain"
+  mkdir -p "$FX/repo/brand" "$FX/repo/promo/x" "$FX/plain"
   echo '# 品牌' > "$FX/repo/brand/DESIGN.md"
   echo '{"meta":{"modes":["light","dark"],"defaultMode":"light","roles":{"accent":"semantic.color.action.primary","text.primary":"semantic.color.text.primary"}}}' > "$FX/repo/brand/tokens.json"
   echo '{"semantic":{"color":{"action":{"primary":{"$value":"#1A1D22"}},"text":{"primary":{"$value":"#1A1D22"}}}}}' > "$FX/repo/brand/tokens.resolved.json"
   echo '{"semantic":{"color":{"action":{"primary":{"$value":"#E8EAED"}},"text":{"primary":{"$value":"#F6F7F9"}}}}}' > "$FX/repo/brand/tokens.resolved.dark.json"
-  local cmt="/* node -e '…' ../.. accent text.primary@dark */" res before3=$fail
+  local cmt="/* node -e '…' ../../brand accent text.primary@dark */" res before3=$fail
   fx_brand() {  # $1 = 视频项目目录；$2 = :root 里的区块内容；$3 = 期望输出含的片段（"无输出" = 不该有任何 CRAFT-007 行）
     printf '<style>\n:root {\n%s\n}\n</style>\n' "$2" > "$1/index.html"
     res=$(cd "$1" && fail=0 warn=0 && brand_tokens_check)
@@ -101,12 +101,12 @@ self_check() {
     else printf '%s\n' "$res" | grep -qF "$3" || bad "CRAFT-007 夹具没报出「$3」，实际：$res"; fi
   }
   local ok_block; ok_block=$(printf '/* brand:tokens */\n%s\n--brand-accent: #1A1D22;\n--brand-text-primary-dark: #F6F7F9;\n/* /brand:tokens */' "$cmt")
-  fx_brand "$FX/repo/brand/promo/x" "$ok_block" "✅ brand:tokens 区块 2 个变量"
-  fx_brand "$FX/repo/brand/promo/x" "--brand-accent: #1A1D22;" "缺 /* brand:tokens */"
-  fx_brand "$FX/repo/brand/promo/x" "$(printf '/* brand:tokens — %s\n--brand-accent: #1A1D22;\n/* /brand:tokens */' "$cmt")" "各自单独成行"
-  fx_brand "$FX/repo/brand/promo/x" "$(printf '/* brand:tokens */\n--brand-accent: #1A1D22;\n/* /brand:tokens */')" "下一行要是一条注释"
-  fx_brand "$FX/repo/brand/promo/x" "${ok_block/\#F6F7F9/#FFFFFF}" "tokens 里是 #F6F7F9"
-  fx_brand "$FX/repo/brand/promo/x" "${ok_block/--brand-text-primary-dark/--brand-dark-text-primary}" "对不上 meta.roles"
+  fx_brand "$FX/repo/promo/x" "$ok_block" "✅ brand:tokens 区块 2 个变量"
+  fx_brand "$FX/repo/promo/x" "--brand-accent: #1A1D22;" "缺 /* brand:tokens */"
+  fx_brand "$FX/repo/promo/x" "$(printf '/* brand:tokens — %s\n--brand-accent: #1A1D22;\n/* /brand:tokens */' "$cmt")" "各自单独成行"
+  fx_brand "$FX/repo/promo/x" "$(printf '/* brand:tokens */\n--brand-accent: #1A1D22;\n/* /brand:tokens */')" "下一行要是一条注释"
+  fx_brand "$FX/repo/promo/x" "${ok_block/\#F6F7F9/#FFFFFF}" "tokens 里是 #F6F7F9"
+  fx_brand "$FX/repo/promo/x" "${ok_block/--brand-text-primary-dark/--brand-dark-text-primary}" "对不上 meta.roles"
   fx_brand "$FX/plain" "--brand-accent: #1A1D22;" "无输出"
   [ "$fail" = "$before3" ] && ok "品牌区块检查夹具：正例通过，反例全部报出（CRAFT-007）"
 }

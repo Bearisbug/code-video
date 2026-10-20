@@ -16,13 +16,13 @@
   - 品牌色与风格包的明暗结构冲突时（如 `fui-hud` 要求近黑底上的高亮线条，而品牌色很暗），把冲突告诉用户，给两个选项：换风格包，或只把品牌色用在收尾字标上。
   - 品牌 `DESIGN.md` 限制彩色（如彩色只用于链接与状态）或禁用渐变，而候选风格包是高饱和配色或带渐变暗角时，直接改用 `light-launch`（黑白灰加一个强调色、无渐变），不必向用户提问。
   - 题材物件有公认的固有色（青柠的绿、可乐的红）而色板里没有时，可以把这一种颜色加进色板，只用于该物件。
-- 为什么: 没有风格约束时，模型会退回同一套默认审美：渐变底、居中大字、元素全部淡入、结尾放 logo（Movez，2026-09 在 X 上的总结，原文为付费内容，未核实）。blind-01 与 reg-001 都按「只用色板」把青柠画成明黄，看起来像柠檬。blind-04 的墨绿 `#2F5D50` 若按「先换强调色」放在近黑底上只有 2.47:1；按相对亮度替换群青蓝（0.090 对 0.078）后字幕对比度 6.48:1。blind-brand-intro 的品牌 `DESIGN.md` 规定彩色只表示链接、焦点与状态，界面不用渐变，`shape-morph` 的群青、橙红底与暗角只能交回用户决定
+- 为什么: 没有风格约束时，模型会退回同一套默认审美：渐变底、居中大字、元素全部淡入、结尾放 logo（Movez，2026-09 在 X 上的总结，原文为付费内容，未核实）。两次测试都按「只用色板」把青柠画成明黄，看起来像柠檬。墨绿 `#2F5D50` 若按「先换强调色」放在近黑底上只有 2.47:1；按相对亮度替换群青蓝（0.090 对 0.078）后字幕对比度 6.48:1。品牌 `DESIGN.md` 规定彩色只表示链接、焦点与状态、界面不用渐变时，`shape-morph` 的群青、橙红底与暗角只能交回用户决定
 - 验证: 成片的配色、字体与所选风格包的「风格语法」逐项对得上
 
 ### CRAFT-003 · 题材与文案来自用户，参考节拍只是示例
 - 触发: 写分镜里的物件、剧情与文案
 - 规则: 题材、主体、品牌来自用户需求。文案按这个顺序取：用户原话 → 仓库的 README、CHANGELOG、品牌 `DESIGN.md` → 从前两者提炼的功能性文字（场景名、副标、标签）；分镜「文字」列每条注明取自哪一级。禁止自造数字、用户评价、与竞品的比较（`CRAFT-018`）。风格包叙事骨架要求的台词（问题句、解决句）算第三级，只从产品功能提炼。风格包里「参考节拍」一节描述的是原作结构，只能借用其节奏与手法（如「每场景 1.2 秒、形变 0.25 秒」），禁止照搬其中的具体物件、剧情和文字。写完分镜后逐行对照风格包的「题材禁用清单」，命中就改
-- 为什么: 拆解 15 种风格时，15 条风格提示词即使经过核验改写，仍有 11 条保留了原作剧情（如开宝箱、猫的情绪剧本）。同一道青柠记账题，blind-01 自拟了副标「个人记账 · PERSONAL FINANCE」，reg-001-r3 认为副标必须来自用户而只放字标；blind-brand-intro 从 CHANGELOG 与 README 取文案，判定为有出处
+- 为什么: 拆解 15 种风格时，15 条风格提示词即使经过核验改写，仍有 11 条保留了原作剧情（如开宝箱、猫的情绪剧本）。同一道青柠记账题，一次盲测自拟了副标「个人记账 · PERSONAL FINANCE」，另一次认为副标必须来自用户而只放字标；从 CHANGELOG 与 README 取的文案判定为有出处
 - 验证: 分镜表里不出现风格包「题材禁用清单」中的任何名词；「文字」列每条都注明了来源级别
 
 ### CRAFT-004 · 文字大小与安全区
@@ -36,7 +36,7 @@
 ### CRAFT-005 · 事件卡在节拍网格上
 - 触发: 安排画面事件和音效的时间点
 - 规则: 先定 BPM，默认 120（风格包另有建议值时用包里的值）。一拍的帧数 = 60 × fps ÷ BPM；30fps、120 BPM 时一拍 15 帧，半拍 7.5 帧。硬切、揭示、落地、重击这类关键事件放在整拍或半拍上，并与音效同帧（见 `AUD-002`）。拍点不落在整帧上时，帧号取 `floor(t × fps)`（如 7.25 秒取第 217 帧），音效时间写成 `帧号 ÷ fps`，画面与音效用同一个帧号。分镜表的时间列写到半拍精度（如 0.25、7.25），关键事件在后面括号注明帧号
-- 为什么: 拆解的 15 段作品里，15 段中有 10 段的配乐在 117–120 BPM；9 处硬切里 7 处与音频起音相差不超过 30ms。reg-002-r3 的执行者指出取整方向没写清；统一向下取整后，画面与音效只要用同一个帧号就不会差 1 帧
+- 为什么: 拆解的 15 段作品里，15 段中有 10 段的配乐在 117–120 BPM；9 处硬切里 7 处与音频起音相差不超过 30ms。统一向下取整后，画面与音效只要用同一个帧号就不会差 1 帧
 - 验证: 分镜表的关键事件时间都能被半拍整除；`cues.json` 里的事件时间等于分镜注明的帧号 ÷ fps
 
 ### CRAFT-006 · 多场景共用一套 token
@@ -49,9 +49,9 @@
 ### CRAFT-007 · 品牌参数取自品牌目录
 - 触发: 视频项目所在仓库的根目录有 `brand/DESIGN.md`，或用户给出了品牌目录
 - 规则: 先读品牌目录里的 `DESIGN.md`，确认唯一参数来源、字体配置与资产映射。强调色、字体、Logo 只从这里取，不再向用户要品牌色或 logo。
-  - 颜色：用命令从 tokens 读出本片用到的颜色角色，生成 CSS 变量，禁止手抄 hex。参数来源是 profile-2 格式的 `tokens.json` 时，在视频项目根目录运行下面的命令，第一个参数是品牌目录（视频项目在默认位置 `brand/promo/<slug>/` 时为 `../..`），其后是 `meta.roles` 里的角色名。角色名不带后缀时读默认模式（`meta.defaultMode`）的值，变量名为 `--brand-<角色>`（角色名里的点换成连字符）；带 `@<模式>` 时读该模式的值（profile-2 为每个非默认模式生成 `tokens.resolved.<模式>.json`），变量名加 `-<模式>` 后缀，如 `text.primary@dark` 生成 `--brand-text-primary-dark`。深色底上的字标与文字用暗色模式的 `text.primary`，就取 `text.primary@dark`：
+  - 颜色：用命令从 tokens 读出本片用到的颜色角色，生成 CSS 变量，禁止手抄 hex。参数来源是 profile-2 格式的 `tokens.json` 时，在视频项目根目录运行下面的命令，第一个参数是品牌目录（视频项目在默认位置 `promo/<slug>/` 时为 `../../brand`），其后是 `meta.roles` 里的角色名。角色名不带后缀时读默认模式（`meta.defaultMode`）的值，变量名为 `--brand-<角色>`（角色名里的点换成连字符）；带 `@<模式>` 时读该模式的值（profile-2 为每个非默认模式生成 `tokens.resolved.<模式>.json`），变量名加 `-<模式>` 后缀，如 `text.primary@dark` 生成 `--brand-text-primary-dark`。深色底上的字标与文字用暗色模式的 `text.primary`，就取 `text.primary@dark`：
     ```bash
-    node -e 'const p=require("path"),[b,...roles]=process.argv.slice(1),d=p.resolve(b),t=require(d+"/tokens.json");for(const a of roles){const[k,m]=a.split("@"),f=!m||m===t.meta.defaultMode?"tokens.resolved.json":`tokens.resolved.${m}.json`;console.log(`--brand-${k.replace(/\./g,"-")}${m?"-"+m:""}: ${t.meta.roles[k].split(".").reduce((o,s)=>o[s],require(p.join(d,f))).$value};`)}' ../.. accent onAccent surface.default text.primary text.primary@dark
+    node -e 'const p=require("path"),[b,...roles]=process.argv.slice(1),d=p.resolve(b),t=require(d+"/tokens.json");for(const a of roles){const[k,m]=a.split("@"),f=!m||m===t.meta.defaultMode?"tokens.resolved.json":`tokens.resolved.${m}.json`;console.log(`--brand-${k.replace(/\./g,"-")}${m?"-"+m:""}: ${t.meta.roles[k].split(".").reduce((o,s)=>o[s],require(p.join(d,f))).$value};`)}' ../../brand accent onAccent surface.default text.primary text.primary@dark
     ```
     输出放进组合第一个 `<style>` 的 `:root` token 块（`CRAFT-006`），区块照下面的样子写：起止标记各自单独成行、逐字照写；起始标记的下一行是一条注释，内容是这次运行的完整命令（含 `node -e` 脚本原文）；其余行只放命令输出。tokens 改了就重跑，整体替换两个标记之间的内容。
     ```css
@@ -133,14 +133,14 @@
   - 锁定的 0.8.96 下不加运动模糊：不用官方 `motion-blur` 组件；CSS `blur()` 向各个方向一起糊，不算运动模糊；禁止为运动模糊另写逐帧截图渲染器，渲染一律走 HyperFrames（`HF-001`）。
   - 峰值每帧位移 = 移动距离 × 缓动最大斜率 ÷（时长 × fps）。常用缓动的最大斜率（同一族的 `.in`、`.out`、`.inOut` 相同）：`none` 1，`sine` 1.57，`power1` 2，`power2` 3，`power3` 4，`power4` 5，`back.out(1.7)` 4.7，`expo` 6.9。
   - 峰值超过 80px/帧（按 1920 宽、30fps；60fps 时为 40px）的动作，分镜「动作」列写明用哪种处理：① 压到 2 帧以内当作位置硬切，落点停住；② 加风格化残影，主体副本 6–8 份，逐份延后 0.012 秒、不透明度递减（写法同 `shape-morph` 技术配方第 7 步）；③ 拉长时长或换斜率小的缓动，把峰值降到 80px/帧以下；④ 移动中的文字不要求可读，到位后按 `CRAFT-004` 停够时长；⑤ 风格包写明的挤压拉伸弹跳（`shape-morph`、`mascot-story` 的落下与团块弹跳）按包做，不另加残影。
-- 为什么: 按 `HF-005` 查到 v0.8.96 tag 下的 `skills/hyperframes-animation/references/motion-blur.md` 与 `registry/components/motion-blur/`：组件在页面里沿轨迹叠 N+1 份副本模拟快门，靠 `setTimeout` 轮询挂载（与 `DET-001` 冲突）。本机 0.8.96 实测同一组合连续渲染 6 次（`--workers 2`；属性挂载、显式 `attachMotionBlur`、关闭 fast capture 各 2 次），3 次有拖影、3 次没有，交替出现；引擎自带的子帧运动模糊不在 CLI `render` 的参数里。80px/帧是 onetake 作者的工程判断，没有审片结论：motion-web 与 Pocket Weather 第三版不带模糊，峰值 385、354px/帧（作者口径）照样通过，所以超过阈值时要求选定一种处理，而不是一律禁止。GSAP 的 `power1`–`power4` 依次是二次到五次曲线，最大斜率为 2–5。reg-001-r4 收尾团块一跳 260px、0.125 秒 `power2.out`，峰值 208px/帧，判定者目检为正常的卡通弹跳；reg-005-r2 给吉祥物 0.8 秒落下另加了 6 份残影，判定为包外手法
+- 为什么: 按 `HF-005` 查到 v0.8.96 tag 下的 `skills/hyperframes-animation/references/motion-blur.md` 与 `registry/components/motion-blur/`：组件在页面里沿轨迹叠 N+1 份副本模拟快门，靠 `setTimeout` 轮询挂载（与 `DET-001` 冲突）。本机 0.8.96 实测同一组合连续渲染 6 次（`--workers 2`；属性挂载、显式 `attachMotionBlur`、关闭 fast capture 各 2 次），3 次有拖影、3 次没有，交替出现；引擎自带的子帧运动模糊不在 CLI `render` 的参数里。80px/帧是 onetake 作者的工程判断，没有审片结论：motion-web 与 Pocket Weather 第三版不带模糊，峰值 385、354px/帧（作者口径）照样通过，所以超过阈值时要求选定一种处理，而不是一律禁止。GSAP 的 `power1`–`power4` 依次是二次到五次曲线，最大斜率为 2–5。收尾团块一跳 260px、0.125 秒 `power2.out`，峰值 208px/帧，目检为正常的卡通弹跳；给吉祥物 0.8 秒落下另加 6 份残影，判定为包外手法
 - 验证: 峰值动作前后各 1 帧抽帧，画面与「动作」列写的处理一致
 - 来源: https://raw.githubusercontent.com/heygen-com/hyperframes/v0.8.96/skills/hyperframes-animation/references/motion-blur.md ；https://github.com/feitangyuan/onetake （commit cf09bde）
 
 ### CRAFT-014 · 强调靠主体自己
 - 触发: 想给落地、完成、揭晓或关键词加强调
 - 规则: 禁止用粒子、彩纸、碎点、闪点迸发做强调。强调由主体自己完成：落地挤压回弹、缩放冲击、落地抖动（`CRAFT-012`）、颜色或主题一帧翻转、全片唯一的强调色。不是产品自身行为的装饰点缀一律删掉。收拢成标志的线条与形状（如 `shape-morph` 收尾各场景颜色化成短线、汇成句点）是主体自身的变形，不算碎点。风格包写明的常驻质感层与包内装饰（`mascot-story` 的星星、颗粒与火花，`fui-hud` 的数据流与残影）按包
-- 为什么: onetake motion-web 字标处的彩纸碎点被审片人评为「低劣」后删除（作者自述，1 次）。reg-001-r4 的执行者把 `shape-morph` 收尾的短线汇聚当成碎点删掉，收尾少了一个包内动作
+- 为什么: onetake motion-web 字标处的彩纸碎点被审片人评为「低劣」后删除（作者自述，1 次）。若把 `shape-morph` 收尾的短线汇聚当成碎点删掉，收尾会少一个包内动作
 - 验证: 抽帧里没有风格包以外的粒子、彩纸或闪点
 - 来源: https://github.com/feitangyuan/onetake （commit cf09bde 的案例记录）
 
@@ -181,11 +181,11 @@
   - 图解动作默认 4 种：逐步搭建；只亮当前部件，其余降到 40% 不透明度；放大进入内部，用同一元素的缩放完成衔接（`CRAFT-011`）；拆分与合并。
   - 结论画面由前面已出现的物件排出来（`CRAFT-009`）。
   - 声音默认「轻」配乐加少量起音型音效（`AUD-005`），不必向用户提问。
-- 为什么: 标签贴近图形、关键处加提示、一段只讲一个概念，对应 Richard E. Mayer《Multimedia Learning》第 2 版（剑桥大学出版社，2009）的空间邻近、提示与分段原则。数学讲解没有风格包时，REG-003 的三轮执行者各自现编了一套配色（blind-03 借 `shape-morph` 色板，reg-003-r2、r3 各用一套深底蓝金），非数学科普同样没有骨架与配色可依
+- 为什么: 标签贴近图形、关键处加提示、一段只讲一个概念，对应 Richard E. Mayer《Multimedia Learning》第 2 版（剑桥大学出版社，2009）的空间邻近、提示与分段原则。数学讲解没有风格包时，三轮测试的执行者各自现编了一套配色（一轮借 `shape-morph` 色板，两轮各用一套深底蓝金），非数学科普同样没有骨架与配色可依
 - 验证: 分镜表头有 5 段时长，「要点」列每拍一句；抽帧里关键词标签贴在所指图形旁；结论定格段在 `analyze.py rhythm --chart` 的能量图上静止为 100%
 
 ### CRAFT-018 · 画面事实清单
 - 触发: 画面上出现断言、数字、产品功能描述、机制描述或比喻
 - 规则: `storyboard.md` 末尾加「事实清单」表，画面上的每条断言、数字、机制描述占一行，列为：画面文字、出处（用户原话；仓库文件路径与行号；具名公开文档加链接）。没有出处的数字改写成不带数字的说法，或在画面上标「示意」。比喻另加两列：对应关系（比喻物 ↔ 真实部件）、在哪里不成立；不成立的地方会误导结论时，画面加一行修正字幕。画面上没有任何断言时写「事实清单：无」
-- 为什么: blind-02 给真实产品 Sentinel Review 自拟了「Go 单仓 48,213 个文件、9.6M 行」和一个具体的文件行号；`fui-hud` 的版式要求大读数与候选列表，题材里没有真实数据时执行者就会编
+- 为什么: 一次盲测给真实产品 Sentinel Review 自拟了「Go 单仓 48,213 个文件、9.6M 行」和一个具体的文件行号；`fui-hud` 的版式要求大读数与候选列表，题材里没有真实数据时执行者就会编
 - 验证: 成片抽帧上的每条文字都能在事实清单里找到出处或「示意」标记；`check.sh <项目目录>` 检查 `storyboard.md` 里有「事实清单」

@@ -1,6 +1,6 @@
 ---
 name: code-video
-description: 适用于用代码制作视频并渲染成 MP4：品牌片头与字标演绎、产品与功能发布片、AI 工具宣传片、无旁白的科技科普与原理讲解短片、数据与概念动画、数学与算法讲解动画，并用代码合成配乐与音效；也用于照参考片做同款节奏，或修「像 PPT」「没节奏」「转场生硬」的视频。Use when the user asks to make, animate, or render a video / motion graphic / launch video / animated intro / explainer clip with code, or to apply a named video style. NOT for AI 生成画面（Seedance、Kling、Runway 等文生视频）、实拍素材与录屏剪辑、TTS 旁白配音、网页或 App 里的 UI 动效（那是 ui-constraints / mobile-ui-constraints）。中文触发：用代码做视频 / 做个动画视频 / 发布片 / 产品发布视频 / 宣传短片 / 科普短片 / 原理讲解动画 / 讲清楚某个技术是怎么工作的 / 照这个参考片做 / 像这个视频的感觉 / 像 PPT / 没节奏 / 转场生硬 / MG 动画 / 片头 / 字标动画 / 动效视频 / 数据动画 / 数学讲解动画 / Manim / HyperFrames / 渲染 MP4 / 形变动画 / 赛博 HUD / 科幻界面 / 吉祥物宣传片 / 可爱角色讲故事 / 打字机字幕 / 给视频配音效配乐。其余能力：HTML 视频由 HyperFrames（锁定 0.8.96）逐帧渲染，数学讲解用 Manim CE；内置风格包 shape-morph（一形贯穿形变）、fui-hud（电影科幻界面）、mascot-story（吉祥物小剧场）、light-launch（浅底发布片）；分镜前出三个构思，节奏与段落衔接检查，参考片拆解，用 HTML 复刻产品界面做功能演示，画面事实核对。
+description: 适用于用代码制作视频并渲染成 MP4：品牌片头与字标演绎、产品与功能发布片、AI 工具宣传片、无旁白的科技科普与原理讲解短片、数据与概念动画、数学与算法讲解动画，并用代码合成配乐与音效；也用于照参考片做同款节奏，或修「像 PPT」「没节奏」「转场生硬」的视频。Use when the user asks to make, animate, or render a video / motion graphic / launch video / animated intro / explainer clip with code, or to apply a named video style. NOT for AI 生成画面（Seedance、Kling、Runway 等文生视频）、实拍素材与录屏剪辑、TTS 旁白配音、网页或 App 里的 UI 动效（那是 ui-constraints / mobile-ui-constraints）。中文触发：用代码做视频 / 做个动画视频 / 产品发布视频 / 宣传短片 / 科普短片 / 原理讲解动画 / 讲清楚某个技术是怎么工作的 / 照这个参考片做 / 像这个视频的感觉 / MG 动画 / 片头 / 字标动画 / 动效视频 / 数据动画 / 数学讲解动画 / Manim / HyperFrames / 渲染 MP4 / 形变动画 / 赛博 HUD / 科幻界面 / 吉祥物宣传片 / 可爱角色讲故事 / 打字机字幕 / 给视频配音效配乐。其余能力：HTML 视频由 HyperFrames（锁定 0.8.96）逐帧渲染，数学讲解用 Manim CE；内置风格包 shape-morph（一形贯穿形变）、fui-hud（电影科幻界面）、mascot-story（吉祥物小剧场）、light-launch（浅底发布片）；分镜前出三个构思，节奏与段落衔接检查，参考片拆解，用 HTML 复刻产品界面做功能演示，画面事实核对。
 ---
 
 # code-video
@@ -9,7 +9,7 @@ description: 适用于用代码制作视频并渲染成 MP4：品牌片头与字
 
 - **适用**：用代码生成画面并渲染成视频文件，包括 10–60 秒的动态图形、片头、宣传短片、产品发布片、科普讲解、概念动画、数学讲解，以及与之配套的代码合成配乐和音效。
 - **不适用**：
-  - AI 文生视频、实拍剪辑、TTS 旁白，第一版不含。
+  - AI 文生视频、实拍剪辑、TTS 旁白。
   - 录屏素材剪辑；要展示软件界面时用 HTML 复刻（`CRAFT-016`）。
   - 网页或 App 界面里的交互动效，交给 ui-constraints 或 mobile-ui-constraints。
   - 用户点名用 Remotion 或项目已经是 Remotion 时，写法按 Remotion 官方文档；本 Skill 仍提供风格包、音频与验收规则。

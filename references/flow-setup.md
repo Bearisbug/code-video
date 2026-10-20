@@ -2,7 +2,7 @@
 
 按顺序执行，每步后面是验证方法。`<skill>` 指本 Skill 的根目录。纯 Manim 项目只做第 1、4 步和末尾「Manim 档」一节。
 
-1. **建目录**：用户指定了位置就建在那里；没指定且正在某个产品的代码仓库里工作时，默认建在仓库根的 `brand/promo/<slug>/`（slug 用小写英文加连字符描述这支视频，如 `launch-10s`），并在其中加 `.gitignore` 忽略 `node_modules/`、`.venv/`、`snapshots/`、`.hf-font-cache/`；两者都不满足时问用户放哪。默认结构（下图的 `<项目名>/` 即该目录）：
+1. **建目录**：用户指定了位置就建在那里；没指定且正在某个产品的代码仓库里工作时，默认建在仓库根的 `promo/<slug>/`（slug 用小写英文加连字符描述这支视频，如 `launch-10s`；不放进 `brand/`，因为品牌在独立仓时 `brand/` 会整体替换为副本），并在其中加 `.gitignore` 忽略 `node_modules/`、`.venv/`、`snapshots/`、`.hf-font-cache/`；两者都不满足时问用户放哪。默认结构（下图的 `<项目名>/` 即该目录）：
    ```
    <项目名>/
      index.html        组合文件（HyperFrames 档）或 scene.py（Manim 档）
@@ -29,7 +29,7 @@
    npx hyperframes browser ensure
    npx hyperframes doctor
    ```
-   验证：`doctor` 里 `FFmpeg`、`FFprobe`、`Chrome` 三项为 ✓。whisper-cpp、Kokoro、MusicGen 三项的 ✗ 可以忽略，第一版不用它们。
+   验证：`doctor` 里 `FFmpeg`、`FFprobe`、`Chrome` 三项为 ✓。whisper-cpp、Kokoro、MusicGen 三项的 ✗ 可以忽略，本 Skill 不用它们。
 
 4. **Python 环境**（合成音频、分析成片、Manim 时需要）：
    ```bash

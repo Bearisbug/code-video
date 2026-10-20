@@ -1,6 +1,6 @@
 # AUD · 配乐与音效
 
-第一版只做两种音频来源：`scripts/synth.py` 用代码合成，或用户提供的本地音频。旁白与 TTS 不在范围内。
+音频只有两种来源：`scripts/synth.py` 用代码合成，或用户提供的本地音频。旁白与 TTS 不在范围内。
 
 ### AUD-001 · 音频从分镜生成，挂在组合上
 - 触发: 视频需要配乐或音效
@@ -11,13 +11,13 @@
 ### AUD-002 · 音效与画面事件同帧
 - 触发: 写 `cues.json` 的事件时间
 - 规则: 「画面事件时间」指变化在画面上看得见的那一帧：揭示是新底色铺开大半的一帧，落地是接触的一帧，闪白是白帧本身，不是补间的起点。冲击、pop、tick、blip、chime、glitch、alarm 这类「起音即重点」的音效，`t` 等于画面事件时间，误差不超过 1 帧（30fps 下 33ms）。缓入型揭示（如 0.2 秒 `power2.in` 的圆形揭示）要比拍点提前 4 帧起步，让铺开那一帧落在拍点上，音效留在拍点。whoosh 最响处在 `t + dur/2`，写 `t = 事件时间 − dur/2`；riser 在 `t + dur` 到达顶点，写 `t = 重击时间 − dur`。透明度从 0 起步的入场，补间提前 1 帧起步，让第一个看得见的帧落在拍点上
-- 为什么: 本机实测前 7 种音效的起音落在指定时间的 5ms 以内；blind-01 把 impact 放在 0.2 秒 `power2.in` 揭示的起点，揭示圆前 3 帧被主图形挡住，声音比画面早 133ms，改为揭示提前 4 帧起步后同帧。blind-06 的开场词透明度入场提前 1 帧后，第 7 帧首次可见、与音效同帧，`sync` 仍读出 −2.1 帧并标 high；blind-07 的淡入读偏 +2 到 +4 帧
+- 为什么: 本机实测前 7 种音效的起音落在指定时间的 5ms 以内；impact 放在 0.2 秒 `power2.in` 揭示的起点时，揭示圆前 3 帧被主图形挡住，声音比画面早 133ms，改为揭示提前 4 帧起步后同帧。开场词透明度入场提前 1 帧后，第 7 帧首次可见、与音效同帧，`sync` 仍读出 −2.1 帧并标 high；另一支片的淡入读偏 +2 到 +4 帧
 - 验证: `python <skill>/scripts/analyze.py sync renders/<name>.mp4 --events <事件时间>`，`offset_frames` 在 ±1 以内；`visual_confidence` 为 low 的事件，以及透明度入场与交叉淡入的事件（`sync` 对它们会读偏 2–4 帧，仍可能标 high），抽前后各 2 帧目检
 
 ### AUD-003 · 关键揭晓前留空拍
 - 触发: 分镜里有全片最重要的揭晓、锁定或落版
 - 规则: 揭晓前留 50–200ms 近静音，揭晓帧同时落一个 `impact`。做法：在 `cues.json` 的 `bed.automation` 加一段 `[揭晓时刻 − 0.1, 揭晓时刻, 0.03]`，这段时间内不安排音效事件；揭晓后要音床抬高一档时再加 `[揭晓时刻, 结束, 1.2]`。自动化只作用于音床，`impact` 等事件不受影响。开了共用空间（`AUD-006`）时 `bed.send` 写 0：音床在空拍之前送进混响的尾音会穿过空拍。禁止用 ffmpeg `volume` 表达式做这一步
-- 为什么: 拆解的 15 段作品里，01、05、09、12、13 段都在关键揭晓前留了 50–200ms 近静音，再在同一帧落低频重击。本机实测 `automation` 做法：低谷内 −58.7dB，揭晓帧 impact −6.4dB。ffmpeg `volume` 表达式默认按约 21ms 一块求值，会把 impact 的起音一起压掉。blind-06（2026-10-07）开 `space`、音床按默认送 0.15 时，揭晓前 50ms 只比揭晓帧低 22.2 dB；同一清单只把 `bed.send` 改成 0，低 44.9 dB，`input_plr` 11.29 → 11.53，仍为 linear
+- 为什么: 拆解的 15 段作品里，01、05、09、12、13 段都在关键揭晓前留了 50–200ms 近静音，再在同一帧落低频重击。本机实测 `automation` 做法：低谷内 −58.7dB，揭晓帧 impact −6.4dB。ffmpeg `volume` 表达式默认按约 21ms 一块求值，会把 impact 的起音一起压掉。2026-10-07 实测，开 `space`、音床按默认送 0.15 时，揭晓前 50ms 只比揭晓帧低 22.2 dB；同一清单只把 `bed.send` 改成 0，低 44.9 dB，`input_plr` 11.29 → 11.53，仍为 linear
 - 验证: `analyze.py onsets` 能在揭晓时刻测到起音；揭晓前 50ms 的音量比揭晓帧低 30dB 以上
 
 ### AUD-004 · 在成片上测响度
@@ -52,19 +52,19 @@
     | 同上 | 1.1 | impact 0.9 | 其余冲击类 0.4–0.5 | `shape-morph` 片 12/12，11.52 |
     | pulse 音床 | 2.5 | impact 0.8 | `glitch` ≤ 0.35 | `fui-hud` 片 8/8，11.67 |
     | pulse 音床 | 3.0 | impact 1.0 | `glitch` ≤ 0.5 | `fui-hud` 片 8/8，11.70 |
-    | 中等密度（每秒 0.6–1.3 个），pluck | 1.25 | impact 1.0 | 起音型 0.35–0.45 | 1/1（blind-06，seed 1），11.29；Δ 3.3–3.4 |
+    | 中等密度（每秒 0.6–1.3 个），pluck | 1.25 | impact 1.0 | 起音型 0.35–0.45 | 1/1（seed 1），11.29；Δ 3.3–3.4 |
     | 音效稀疏（每秒 0.6 个以下）且要「轻」，pluck | 0.8 | impact 0.4 | 起音型 0.3 | 8/8，11.40；Δ 3.6 |
     | 稀疏、音效要更突出，pluck | 1.2 | impact 1.0 | 起音型 0.75 | 8/8，11.74；Δ 4.3 |
 
   - `whoosh` 的 gain 不超过 0.3。
-  - 报 dynamic 时分两步改，每步都重新合成、重新归一：先按上表提高音床 gain，最响事件保持风格包规定的值；仍超门槛，再把最响事件的 gain 降 0.1–0.2。禁止靠换 `seed` 过门槛。表里的行只是起点，换一份清单以 `normalize-audio.sh` 的输出为准；两步改完 Δ 跌到 3.0 以下时，把起音型音效的 gain 各提高 0.05–0.1，再合成核对（blind-07 照「轻」一行配，换清单后进 dynamic，`input_plr` 12.65）。
+  - 报 dynamic 时分两步改，每步都重新合成、重新归一：先按上表提高音床 gain，最响事件保持风格包规定的值；仍超门槛，再把最响事件的 gain 降 0.1–0.2。禁止靠换 `seed` 过门槛。表里的行只是起点，换一份清单以 `normalize-audio.sh` 的输出为准；两步改完 Δ 跌到 3.0 以下时，把起音型音效的 gain 各提高 0.05–0.1，再合成核对（照「轻」一行配的另一份清单进了 dynamic，`input_plr` 12.65）。
   - 真峰值以 `normalize-audio.sh` 输出的 `input_tp` 为准，不能从合成输出的 −3 dBFS 采样峰值推算：噪声类音效的真峰值比采样峰值高，impact 高 1.8–4.3 dB，glitch 高 2.2–4.3 dB，whoosh 与 tick 不超过 1.9 dB。
   - 「轻」同时满足四条：① `drums: false`；② 音床 style 为 `pluck`；③ Δ 在 3.0–4.5 dB 之间，Δ = 起音型音效（pop、blip、chime，不含全片最响事件）起音后 0.1 秒 RMS 的中位数，减去无事件段音床 1 秒 RMS 的中位数；`tick` 不计入，它只有 50ms，0.1 秒窗口的 RMS 读不出它（同一混音里 pop 比音床高 3.3–8.7 dB 时，tick 只读出 0–0.9 dB）；④ 整片 −14 LUFS，归一为 linear。需要听清音效的稀疏片不用 `pad` 音床：pad 在 linear 组合里 Δ 最高只有 2.5 dB，pop 会被盖住。Δ 在归一后的 WAV 或成片上测：
     ```bash
     ffmpeg -hide_banner -nostats -ss <无事件段起点> -t 1 -i <文件> -af astats=measure_perchannel=none:measure_overall=RMS_level -f null - 2>&1 | grep 'RMS level'
     ffmpeg -hide_banner -nostats -ss <事件时间> -t 0.1 -i <文件> -af astats=measure_perchannel=none:measure_overall=RMS_level -f null - 2>&1 | grep 'RMS level'
     ```
-- 为什么: 归一到 −14 LUFS 后，成片里音床的 1 秒 RMS 都在 −16.5 到 −15.8 dBFS，与 gain 的绝对值无关；gain 只决定音床与音效的比例，调低音床只会抬高 `input_plr`（音床 0.35、impact 1.0 时为 18.53）。Δ 低于 3 dB 时音效被音床盖住，高于约 4.5 dB 时 `input_plr` 超过 12。dynamic 不是退路：实测它把最响 impact 与 pop 的差从 11.8 dB 压到 4.7 dB，揭晓没了冲击力，音床电平也跟着起伏 1.3 dB。换 seed 不算修法：音床 0.85、impact 1.0 这一组在 seed 1–12 上 `input_plr` 跨 11.07–13.35，只有 4 个 linear，之后增减任何噪声类事件都会让结果重新跳动。reg-002-r3 的成片实际按 dynamic 归一（输入 −18.13 LUFS、−1.32 dBTP，差 16.8）。以上数据是 2026-10-07 用 `synth.py` 与 `normalize-audio.sh` 在 reg-004-r3、reg-002-r3、blind-05、reg-003-r5 四份清单上扫描所得，只做了测量，没有试听
+- 为什么: 归一到 −14 LUFS 后，成片里音床的 1 秒 RMS 都在 −16.5 到 −15.8 dBFS，与 gain 的绝对值无关；gain 只决定音床与音效的比例，调低音床只会抬高 `input_plr`（音床 0.35、impact 1.0 时为 18.53）。Δ 低于 3 dB 时音效被音床盖住，高于约 4.5 dB 时 `input_plr` 超过 12。dynamic 不是退路：实测它把最响 impact 与 pop 的差从 11.8 dB 压到 4.7 dB，揭晓没了冲击力，音床电平也跟着起伏 1.3 dB。换 seed 不算修法：音床 0.85、impact 1.0 这一组在 seed 1–12 上 `input_plr` 跨 11.07–13.35，只有 4 个 linear，之后增减任何噪声类事件都会让结果重新跳动。一支回归成片实际按 dynamic 归一（输入 −18.13 LUFS、−1.32 dBTP，差 16.8）。以上数据是 2026-10-07 用 `synth.py` 与 `normalize-audio.sh` 在四份盲测与回归清单上扫描所得，只做了测量，没有试听
 - 验证: 交付说明写出 `loudnorm_mode` 与 `input_plr`；要「轻」的片子再写 Δ
 
 ### AUD-006 · 音效密度与共用空间
@@ -75,7 +75,7 @@
   - 不给每个画面事件都配声：打字每 3 个字一声 `tick`；点击配两声 `tick`，按下与抬起相隔 60–75ms，与画面上的按下、抬起同帧。
   - 共用空间：清单顶层写 `"space": {"t60": 1.1}` 时，全部声音按各自的送混响比例进同一个混响。默认比例：glitch 0.1，tick、blip 0.15，pop、alarm 0.2，impact 0.25，chime 0.4，riser 0.5，whoosh 0.6，音床 0.15（音床有 `AUD-003` 空拍或停顿段压低时写 0）；单个事件写 `send` 覆盖，音床写在 `bed.send`。风格包写明开不开，没写的不开。
   - 落地、碰撞这类物体接触用 `tick`、`impact` 或 `chime`；`pop`、`blip` 是纯音，听起来是界面提示音。风格包「声音」一节另有规定的按包（`shape-morph`、`mascot-story` 的落地配 `pop`）。
-- 为什么: onetake motion-web 首版每个画面事件配一声（打字 40 声、字母 10 声、彩纸 26 声），声音之间没有共同空间、用的是原始正弦，审片人不到一分钟就评为「低劣」（作者自述）。`space` 的本机实测：同一清单两次合成逐字节一致；reg-003-r5 清单（音床 0.8）开启后仍为 linear，Δ 从 3.62 变为 3.41 dB；reg-004-r3 清单（音床 1.25、seed 7）开启后仍为 linear；10 秒探针 17 个事件开启后 `input_plr` 9.92、linear。混响音色没有试听
+- 为什么: onetake motion-web 首版每个画面事件配一声（打字 40 声、字母 10 声、彩纸 26 声），声音之间没有共同空间、用的是原始正弦，审片人不到一分钟就评为「低劣」（作者自述）。`space` 的本机实测：同一清单两次合成逐字节一致；音床 0.8 的清单开启后仍为 linear，Δ 从 3.62 变为 3.41 dB；音床 1.25、seed 7 的清单开启后仍为 linear；10 秒探针 17 个事件开启后 `input_plr` 9.92、linear。混响音色没有试听
 - 验证: 合成时没有 40ms 告警；事件数小于拍数
 - 来源: https://github.com/feitangyuan/onetake （commit cf09bde 的案例记录；只取方法与数值）
 ## 合成器参考（scripts/synth.py）
@@ -121,6 +121,6 @@
 
 合成输出的峰值固定在 −3 dBFS，响度未归一；挂载前先执行 `<skill>/scripts/normalize-audio.sh assets/sfx-raw.wav assets/audio.wav`。
 
-输出末端有 tanh 饱和，多个大增益事件叠在一起时会被压扁：全片最响的事件（通常是揭晓的 `impact`）按 `AUD-005` 的增益表取值，其余冲击类事件取 0.3–0.6。blind-02 里开机 `impact` 取 0.6 时比锁定还响，改为 0.35 后锁定成为最响。
+输出末端有 tanh 饱和，多个大增益事件叠在一起时会被压扁：全片最响的事件（通常是揭晓的 `impact`）按 `AUD-005` 的增益表取值，其余冲击类事件取 0.3–0.6。开机 `impact` 取 0.6 时比锁定还响，改为 0.35 后锁定成为最响。
 
-`normalize-audio.sh` 输出的 `loudnorm_mode` 为 `dynamic` 时，loudnorm 改用动态压缩，事件之间的响度差会被压平（reg-002-r3：开机与锁定冲击被压到 −7.0 与 −6.9 dB），按 `AUD-005` 改增益后重新合成。风格包要求某个事件全片最响时，用 `analyze.py loudest` 在成片上核对：HyperFrames 混音会改变各事件电平，素材里的排序不能代替成片。
+`normalize-audio.sh` 输出的 `loudnorm_mode` 为 `dynamic` 时，loudnorm 改用动态压缩，事件之间的响度差会被压平（实测开机与锁定冲击被压到 −7.0 与 −6.9 dB），按 `AUD-005` 改增益后重新合成。风格包要求某个事件全片最响时，用 `analyze.py loudest` 在成片上核对：HyperFrames 混音会改变各事件电平，素材里的排序不能代替成片。
